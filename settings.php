@@ -43,6 +43,59 @@ if ($ADMIN->fulltree) {
         new lang_string('apisettings_information', 'local_sigaaintegration')
     ));
 
+    $clientlist = new admin_setting_configtextarea(
+        'local_sigaaintegration/clientlist',
+        new lang_string('clientlist', 'local_sigaaintegration'),
+        new lang_string('clientlist_desc', 'local_sigaaintegration'),
+        '',
+        PARAM_TEXT
+    );
+    $settings->add($clientlist);
+
+    // Recupera a lista de clientes cadastrados
+    $clients = get_config('local_sigaaintegration', 'clientlist');
+    if ($clients) {
+        // Divide os nomes por linhas ou vírgulas
+        $clientnames = preg_split("/[\r\n,]+/", $clients, -1, PREG_SPLIT_NO_EMPTY);
+
+        foreach ($clientnames as $client) {
+            $client = trim($client);
+
+            $settings->add(new admin_setting_heading(
+                'api_config_' . $client,
+                new lang_string('client_config', 'local_sigaaintegration') . ': ' . $client,
+                ''
+            ));
+
+            // Configuração para a URL Base
+            $settings->add(new admin_setting_configtext(
+                "local_sigaaintegration/apibaseurl_{$client}",
+                new lang_string('apibaseurl', 'local_sigaaintegration') . " ({$client})",
+                new lang_string('apibaseurl_information', 'local_sigaaintegration'),
+                '',
+                PARAM_URL
+            ));
+
+            // Configuração para o Client ID
+            $settings->add(new admin_setting_configtext(
+                "ocal_sigaaintegration/apiclientid_{$client}",
+                new lang_string('apiclientid', 'local_sigaaintegration') . " ({$client})",
+                new lang_string('apiclientid_information', 'local_sigaaintegration'),
+                '',
+                PARAM_TEXT
+            ));
+
+            // Configuração para a Senha do Cliente
+            $settings->add(new admin_setting_configpasswordunmask(
+                "ocal_sigaaintegration/apiclientsecret_{$client}",
+                new lang_string('apiclientsecret', 'local_sigaaintegration') . " ({$client})",
+                new lang_string('apiclientsecret_information', 'local_sigaaintegration'),
+                ''
+            ));
+        }
+    }
+
+    /*
     $apibaseurl = new admin_setting_configtext(
         'local_sigaaintegration/apibaseurl',
         new lang_string('apibaseurl', 'local_sigaaintegration'),
@@ -67,7 +120,7 @@ if ($ADMIN->fulltree) {
         ''
     );
     $settings->add($apiclientsecret);
-
+    */
     $settings->add(new admin_setting_heading(
         'userfields_settings',
         new lang_string('userfields_settings', 'local_sigaaintegration'),

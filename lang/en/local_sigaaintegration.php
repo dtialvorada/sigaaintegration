@@ -63,3 +63,8 @@ $string['sync_task_name'] = 'Sync Task';
 $string['error:no_enrol_instance'] = 'Manual enrol plugin is disabled.';
 $string['error:user_already_enrolled'] = 'User "{$a->userid}" is already enrolled into course "{$a->courseid}"';
 $string['error:course_already_exists'] = 'Course already exists.';
+
+$string['clientlist'] = 'Client list';
+$string['clientlist_desc'] = 'Client list Desc';
+$string['client_config'] = 'IFRS';
+
