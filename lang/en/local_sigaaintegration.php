@@ -55,6 +55,8 @@ $string['manageintegration'] = 'SIGAA Integration - Manage Integration';
 $string['period'] = 'Period (year/semester)';
 $string['period_help'] = 'Enter the period for processing.';
 $string['importenrollments'] = 'Import enrollments';
+$string['importstudents'] = 'Import students';
+$string['importservants'] = 'Import servants';
 $string['importcourses'] = 'Import courses';
 $string['archivecourses'] = 'Archive courses';
 $string['import'] = 'Import';
@@ -67,4 +69,23 @@ $string['error:course_already_exists'] = 'Course already exists.';
 $string['clientlist'] = 'Client list';
 $string['clientlist_desc'] = 'Client list Desc';
 $string['client_config'] = 'IFRS';
+
+$string['id_campus'] = 'id_campus';
+$string['id_campus_information'] = 'id_campus - SIGAA';
+$string['scheduled_sync_information'] = 'Scheduled sync information';
+$string['scheduled_sync'] = 'Scheduled sync';
+$string['current_term'] = 'Current term';
+$string['current_term_information'] = 'Current term information';
+$string['error_current_term_format'] = 'The current term format "{$a}" is incorrect. Please use the format YYYY/N (where YYYY is the year and N is the semester number, 1 or 2). For more information, please refer to the documentation.';
+
+$string['presencial'] = 'Presencial';
+$string['a_distancia'] = 'A Distância';
+$string['semi_presencial'] = 'Semi-Presencial';
+$string['remoto'] = 'Remoto';
+
+$string['modalidade_educacao'] = 'Modalidade Educação';
+$string['modalidade_educacao_information'] = 'Modalidade Educação';
+
+
+
 

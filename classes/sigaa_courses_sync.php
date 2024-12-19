@@ -1,26 +1,4 @@
 <?php
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- *
- * @package   local_sigaaintegration
- * @copyright 2024, Igor Ferreira Cemim
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
 namespace local_sigaaintegration;
 
 use core\context;
@@ -30,247 +8,280 @@ use Exception;
 use moodle_exception;
 use stdClass;
 
+
 class sigaa_courses_sync {
 
     private string $ano;
 
     private string $periodo;
 
-    private array $disciplinascriadas = [];
+    private array $courses_created = [];
+
+    private array $category_level_one_created = [];
+
+    private array $category_level_two_created = [];
+
+    private array $category_level_three_created = [];
 
     private int $basecategoryid;
 
     private int $editingteacherroleid;
 
-    private object $campocpf;
+    private array $clientlist = [];
 
-    private object $campoperiodoletivo;
+    private sigaa_api_client $data_api;
 
-    private object $campometadata;
+    private sigaa_courses_manager $sigaa_courses;
 
     public function __construct(string $ano, string $periodo) {
         $this->ano = $ano;
         $this->periodo = $periodo;
         $this->editingteacherroleid = configuration::getIdPapelProfessor();
         $this->basecategoryid = configuration::getIdCategoriaBase();
-        $this->campocpf = configuration::getCampoCPF();
-        $this->campoperiodoletivo = configuration::getCampoPeriodoLetivo();
-        $this->campometadata = configuration::getCampoMetadata();
+        $this->clientlist = configuration::getClientListConfig();
+        $this->data_api = sigaa_api_client::create();
     }
 
     public function sync(): void {
         mtrace('INFO: Importando disciplinas e categorias...');
-
-        // Consulta as matrículas
-        $client = sigaa_api_client::create();
+        $this->sigaa_courses = new sigaa_courses_manager($this->data_api);
         $periodoletivo = sigaa_periodo_letivo::buildFromParameters($this->ano, $this->periodo);
-        $matriculas = $client->get_enrollments($periodoletivo);
 
-        foreach ($matriculas as $matricula) {
-            foreach ($matricula['disciplinas'] as $disciplina) {
-                try {
-                    $this->importar_disciplina($matricula, $disciplina);
-                } catch (Exception $e) {
-                    mtrace(sprintf(
-                        'ERRO: Falha ao importar disciplina. disciplina: %s, erro: %s',
-                        $disciplina['cod_disciplina'],
-                        $e->getMessage()
-                    ));
+        if($this->clientlist) {
+            foreach ($this->clientlist as $campus) {
+                mtrace("Campus ".$campus->description." - Início da Sincronização...");
+                if ($campus->scheduled_sync) {
+                    try {
+                        $this->create_category_campus($campus);
+                    } catch (Exception $e) {
+                        mtrace(sprintf(
+                            'ERROR: Falha ao criar categorias, erro: %s',
+                            $e->getMessage()
+                        ));
+                    }
+
+                    // Endpoint matriculados
+                    $enrollments = $this->data_api->get_enrollments($campus, $periodoletivo);
+                    foreach ($enrollments as $enrollment) {
+                        $this->create_all_categories($campus, $enrollment);
+                        $this->create_courses($campus, $enrollment);
+                    }
+                } else {
+                    mtrace("Sincronização desativada para o campus: " . $campus->description);
+                }
+                //mtrace("Campus ". $campus->description. " - Sincronizado!");
+            }
+        }
+    }
+
+    private function create_courses($campus, $enrollment) {
+        try {
+            foreach ($enrollment['disciplinas'] as $disciplina) {
+                $course_idnumber = $this->generate_course_idnumber($campus, $enrollment, $disciplina);
+                if (in_array($course_idnumber, $this->courses_created)) {
+                    return;
+                }
+                if (!$this->course_exists($course_idnumber)) {
+                    $category = $this->get_category_for_discipline($campus, $disciplina, $enrollment);
+                    if ($category) {
+                        $this->create_course_for_discipline($disciplina, $enrollment, $category, $course_idnumber);
+                    }
+                }
+                $this->courses_created[] = $course_idnumber;
+            }
+        } catch (Exception $exception) {
+            mtrace('ERRO: Falha ao importar disciplina. erro:' . $exception->getMessage());
+        }
+    }
+
+    private function create_course_for_discipline($disciplina, $student, $category, $idnumber) {
+        global $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
+        $turma = str_replace(' ', '', $disciplina['turma']);
+        $periodo = $this->removerZeroNoPeriodo($disciplina['periodo']);
+        $fullname = "{$disciplina['disciplina']} / {$disciplina['semestre_oferta_disciplina']}" . $this->get_year_or_semester_suffix($disciplina['periodo']) . " / {$periodo}";
+        $shortname = "{$disciplina['cod_disciplina']} / {$student['id_curso']} / {$turma} / {$disciplina['semestre_oferta_disciplina']}" . $this->get_year_or_semester_suffix($disciplina['periodo']) . " / {$disciplina['periodo']}";
+
+        $newCourse = (object)[
+            'fullname' => $fullname,
+            'shortname' => $shortname,
+            'category' => $category->id,
+            'idnumber' => $idnumber,
+            'summary' => $disciplina['disciplina'],
+            'summaryformat' => FORMAT_PLAIN,
+            'format' => 'topics',
+            'visible' => 1,
+            'numsections' => 10,
+            'startdate' => time()
+        ];
+
+        $new_course = create_course($newCourse);
+        mtrace(sprintf(
+            'INFO: Disciplina criada. idnumber: %s, fullname: %s',
+            $new_course->idnumber,
+            $new_course->fullname
+        ));
+    }
+
+    private function get_category_for_discipline($campus, $disciplina, $enrollment) {
+        global $DB;
+        $idnumber = $this->generate_category_level_three_id($campus, $enrollment['id_curso'], $disciplina);
+        return $DB->get_record('course_categories', ['idnumber' => $idnumber]);
+    }
+
+    private function course_exists($idnumber) {
+        global $DB;
+        return $DB->record_exists('course', ['idnumber' => $idnumber]);
+    }
+
+    private function create_category_campus(campus $campus): void {
+        if (!$this->category_exists($campus->id_campus)) {
+            $course = $this->sigaa_courses->get_courses_by_campus($campus);
+            $this->create_category($course['campus_descricao'], $campus->id_campus, $this->basecategoryid);
+        }
+    }
+
+    private function create_all_categories($campus, $enrollment) {
+        if ($enrollment['status'] == 'ATIVO') {
+            // Evita recriação de nível 1
+            if (!in_array($enrollment['id_curso'], $this->category_level_one_created)) {
+                $this->create_category_level_one($campus, $enrollment);
+                $this->category_level_one_created[] = $enrollment['id_curso'];
+            }
+            // Loop único nas disciplinas para criar níveis 2 e 3
+            $uniquePeriods = [];
+            foreach ($enrollment['disciplinas'] as $disciplina) {
+                // Determina ID e verifica unicidade do nível 2
+                $idnumber_level_two = "{$campus->id_campus}.{$enrollment['id_curso']}.{$disciplina['periodo']}";
+
+                if (!in_array($idnumber_level_two, $this->category_level_two_created)) {
+                    $this->create_category_level_two($campus, $enrollment, $disciplina, $idnumber_level_two);
+                    $this->category_level_two_created[] = $idnumber_level_two;
+                }
+
+                $idnumber_level_three = $this->generate_category_level_three_id($campus, $enrollment['id_curso'], $disciplina);
+                if (!in_array($idnumber_level_three, $this->category_level_three_created)) {
+                    $this->create_category_level_three($campus, $enrollment, $disciplina);
+                    $this->category_level_three_created[] = $idnumber_level_three;
+                }
+
+            }
+        }
+
+
+    }
+
+    private function create_category_level_one(campus $campus, $enrollment){
+        global $DB;
+
+        $parentCategory = $DB->get_record('course_categories', ['idnumber' => $campus->id_campus]);
+        if (!$parentCategory) {
+            throw new Exception("Categoria pai não encontrada: [" . $campus->id_campus . "] Campus ". $campus->description);
+        }
+        $name = $enrollment['curso'];
+        $idnumber =  "{$campus->id_campus}.{$enrollment['id_curso']}";
+
+        $course = $this->sigaa_courses->get_courses_by_id_course($campus, $enrollment['id_curso']);
+        if(isset($course)) {
+
+            if($course['modalidade_educacao'] == $campus::MODALIDADES[$campus->modalidade_educacao]) {
+
+                if (!$this->category_exists($idnumber)) {
+                    $this->create_category($name, $idnumber, $parentCategory->id);
+                }
+            }
+
+        }
+    }
+
+    private function create_category_level_two($campus, $enrollment, $disciplina, $idnumber_level_two) {
+        global $DB;
+
+        $parentCategory = $DB->get_record('course_categories', ['idnumber' => "{$campus->id_campus}.{$enrollment['id_curso']}"]);
+        if ($parentCategory && !$this->category_exists($idnumber_level_two)) {
+            $periodo = $this->removerZeroNoPeriodo($disciplina['periodo']);
+            $this->create_category($periodo, $idnumber_level_two, $parentCategory->id);
+        }
+
+    }
+
+    private function removerZeroNoPeriodo($periodo) {
+        // Verifica se o valor após a barra é 0
+        if (substr($periodo, -2) === '/0') {
+            // Remove a parte "/0" da string
+            return substr($periodo, 0, -2);
+        }
+        // Caso não tenha "/0", retorna o valor original
+        return $periodo;
+    }
+
+    private function create_category_level_three(campus $campus, $enrollment, $disciplina) {
+        global $DB;
+
+        // algumas vezes o semestre_oferta_disciplina está vazio
+        if (isset($disciplina['periodo']) && isset($disciplina['semestre_oferta_disciplina'])) {
+            $idnumber_parent = "{$campus->id_campus}.{$enrollment['id_curso']}.{$disciplina['periodo']}";
+            $parentCategory = $DB->get_record('course_categories', ['idnumber' => $idnumber_parent]);
+
+            if ($parentCategory) {
+                // Gera o identificador do nível 3
+                $idnumber = $this->generate_category_level_three_id($campus, $enrollment['id_curso'], $disciplina);
+
+                if (substr($disciplina['periodo'], -2) === '/0' && $disciplina['semestre_oferta_disciplina'] === '0') {
+                    $name = "Optativas";
+                } else {
+                    $name = "{$disciplina['semestre_oferta_disciplina']}" . $this->get_year_or_semester_suffix($disciplina['periodo']);
+                }
+                if (!$this->category_exists($idnumber)) {
+                    $this->create_category($name, $idnumber, $parentCategory->id);
                 }
             }
         }
     }
 
-    private function getInformacoesDisciplina($dadosdisciplina): stdClass {
-        // Nome da disciplina.
-        // Exemplo: 2024/1 - Redes de Computadores I - POA-SSI306
-        $nomedisciplina = $dadosdisciplina['periodo']
-            . ' - ' . string_helper::capitalize($dadosdisciplina['disciplina'])
-            . ' - ' . $dadosdisciplina['cod_disciplina'];
-
-        // Código da disciplina.
-        // Exemplo: 2024/1-POA-SSI306
-        $codigodisciplina = $dadosdisciplina['periodo'] . '-' . $dadosdisciplina['cod_disciplina'];
-
-        $infodisciplina = new stdClass();
-        $infodisciplina->fullname = $nomedisciplina;
-        $infodisciplina->shortname = $nomedisciplina;
-        $infodisciplina->idnumber = $codigodisciplina;
-        $infodisciplina->summary = '';
-        $infodisciplina->summaryformat = FORMAT_PLAIN;
-        $infodisciplina->format = 'topics';
-        $infodisciplina->startdate = time();
-
-        return $infodisciplina;
+    private function generate_category_level_three_id(campus $campus, $id_curso, $disciplina) {
+        return "{$campus->id_campus}.{$id_curso}.{$disciplina['periodo']}.{$disciplina['semestre_oferta_disciplina']}";
     }
 
-    private function buscar_professor_por_cpf(string $cpf): object|false {
-        global $DB;
-
-        $sql = <<<EOF
-            select
-                u.*
-            from {user} u
-            inner join {user_info_data} infd on
-                infd.userid = u.id
-                and infd.fieldid = :cpf_field_id
-            where
-                infd.data = :cpf
-            EOF;
-
-        $argumentos = [
-            'cpf_field_id' => $this->campocpf->id,
-            'cpf' => str_pad($cpf, '11', '0', STR_PAD_LEFT),
-        ];
-        return $DB->get_record_sql($sql, $argumentos);
+    private function get_year_or_semester_suffix($period) {
+        return (substr($period, -1) === '0') ? 'º ano' : 'º semestre';
     }
 
-    private function importar_disciplina($dadosmatricula, $dadosdisciplina): void {
+    private function category_exists($idnumber) {
         global $DB;
-
-        $infodisciplina = $this->getInformacoesDisciplina($dadosdisciplina);
-        if (array_search($infodisciplina->idnumber, $this->disciplinascriadas)) {
-            return;
-        }
-
-        // Categoria da disciplina
-        $semestreidnumber = $dadosmatricula['id_curso'] . '-' . (int) $dadosdisciplina['semestre_oferta_disciplina'];
-        $semestrecurso = (int) $dadosdisciplina['semestre_oferta_disciplina'];
-        $categoriadisciplina = $this->criar_arvore_categorias(
-            $dadosmatricula['curso'],
-            $dadosmatricula['id_curso'],
-            $semestrecurso,
-            $semestreidnumber
-        );
-
-        $transaction = $DB->start_delegated_transaction();
-        try {
-            $disciplina = $this->criar_disciplina($categoriadisciplina, $infodisciplina, $dadosmatricula, $dadosdisciplina);
-
-            $this->vincular_professores_disciplina($dadosdisciplina['docentes'], $disciplina);
-
-            $transaction->allow_commit();
-
-            $this->disciplinascriadas[] = $infodisciplina->idnumber;
-        } catch (Exception $exception) {
-            mtrace('ERRO: Falha ao importar disciplina. erro:' . $exception->getMessage());
-            $transaction->rollback($exception);
-        }
+        return $DB->record_exists('course_categories', ['idnumber' => $idnumber]);
     }
 
-    /**
-     * Cria a árvore de categorias se necessário e retorna a categoria de semestre do curso/semestre informados.
-     *
-     * Verifica:
-     * - Se é necessário criar a categoria do curso informado, cria se necessário
-     * - Se é necessário criar a categoria do semestre informado, cria se necessário
-     *
-     * Retorna a categoria do semestre ou do curso.
-     *
-     * @throws moodle_exception
-     */
-    private function criar_arvore_categorias(
-        string $nomecurso,
-        string $categoriacursoidnumber,
-        int $semestrecurso,
-        string $categoriasemestreidnumber
-    ): object {
+    private function create_category($name, $idnumber, $parentId) {
         global $DB;
 
-        $categoriacurso = $DB->get_record('course_categories', ['idnumber' => $categoriacursoidnumber]);
+        $categoriacurso = $DB->get_record('course_categories', ['idnumber' => $idnumber]);
         if (!$categoriacurso) {
             $category = new stdClass();
-            $category->name = string_helper::capitalize($nomecurso);
-            $category->idnumber = $categoriacursoidnumber;
-            $category->parent = $this->basecategoryid;
+            $category->name = string_helper::capitalize($name);
+            $category->idnumber = $idnumber;
+            $category->parent = $parentId;
 
             $categoriacurso = core_course_category::create($category);
 
             mtrace(sprintf(
-                'INFO: Categoria de curso criada. idnumbercategoria: %s, curso: %s',
+                'INFO: Categoria criada. idnumber: %s, Nome: %s',
                 $categoriacurso->idnumber,
-                $nomecurso
+                $category->name
             ));
         }
-
-        /**
-         * Caso a disciplina não tenha semestre cadastrado retorna a categoria do curso.
-         */
-        if ($semestrecurso === 0) {
-            return $categoriacurso;
-        }
-
-        $categoriasemestre = $DB->get_record('course_categories', ['idnumber' => $categoriasemestreidnumber]);
-        if (!$categoriasemestre) {
-            $category = new stdClass();
-            $category->name = "Semestre {$semestrecurso}";
-            $category->parent = $categoriacurso->id;
-            $category->idnumber = $categoriasemestreidnumber;
-
-            $categoriasemestre = core_course_category::create($category);
-
-            mtrace(sprintf(
-                'INFO: Categoria de semestre criada. idnumbercategoria: %s, curso: %s, semestre: %s',
-                $categoriasemestre->idnumber,
-                $nomecurso,
-                $semestrecurso
-            ));
-        }
-
-        /**
-         * Retorna a categoria do semestre.
-         */
-        return $categoriasemestre;
     }
 
-    /**
-     * Cria o curso se necesário e retorna o objeto do curso.
-     *
-     * @throws moodle_exception
-     */
-    private function criar_disciplina($categoriadisciplina, $infodisciplina, $dadosmatricula, $dadosdisciplina): object {
-        global $CFG;
-        require_once($CFG->dirroot . '/course/lib.php');
+    private function generate_course_idnumber(campus $campus, $enrollment, $disciplina) {
+        $turma = str_replace(' ', '', $disciplina['turma']);
+        $myid =  "{$campus->id_campus}.{$enrollment['id_curso']}.{$turma}.{$disciplina['id_disciplina']}.{$disciplina['periodo']}.{$disciplina['semestre_oferta_disciplina']}";
+        return $myid;
+    }
 
-        /**
-         * Verifica se a disciplina já existe
-         */
-        $results = core_course_category::search_courses(['search' => $infodisciplina->idnumber]);
-        if (count($results) > 0) {
-            return current($results);
-        }
-
-        // Monta o objeto de metadados
-        $metadata = [
-            'id_curso' => $dadosmatricula['id_curso'],
-            'periodo' => $dadosdisciplina['periodo'],
-            'cod_disciplina' => $dadosdisciplina['cod_disciplina'],
-            'semestre_oferta_disciplina' => $dadosdisciplina['semestre_oferta_disciplina'],
-        ];
-
-        $course = new stdClass();
-        $course->fullname = $infodisciplina->fullname;
-        $course->shortname = $infodisciplina->shortname;
-        $course->summary = $infodisciplina->summary;
-        $course->summaryformat = $infodisciplina->summaryformat;
-        $course->format = $infodisciplina->format;
-        $course->idnumber = $infodisciplina->idnumber;
-        $course->category = $categoriadisciplina->id;
-        $course->startdate = $infodisciplina->startdate;
-
-        // Monta os campos customizados com a origem e os metadados da disciplina
-        $course->{'customfield_' . $this->campoperiodoletivo->shortname} = $metadata['periodo'];
-        $course->{'customfield_' . $this->campometadata->shortname} = json_encode($metadata);
-
-        $novocurso = create_course($course);
-
-        mtrace(sprintf(
-            'INFO: Disciplina criada. idnumber: %s, fullname: %s',
-            $novocurso->idnumber,
-            $novocurso->fullname
-        ));
-
-        return $novocurso;
+    /*
+    private function buscar_professor_por_cpf(string $login): object|false {
+        global $DB;
+        return $DB->get_record('user', ['username' => $login]);
     }
 
     private function vincular_professores_disciplina(array $docentes, object $disciplina): void {
@@ -278,20 +289,36 @@ class sigaa_courses_sync {
 
         // Vincula o(s) professor(es)
         foreach ($docentes as $docente) {
+            // Verifica se o CPF está vazio ou inválido
             if (empty($docente['cpf_docente'])) {
                 mtrace(sprintf(
-                    'ERRO: Professor sem CPF cadastrado no SIGAA. Não é possível inscrever na disciplina. nome: %s',
+                    'ERRO: Professor sem CPF cadastrado no SIGAA. Não é possível inscrever na disciplina. Nome: %s',
                     $docente['docente']
                 ));
                 continue;
             }
 
+            // Corrige o CPF para ter 11 dígitos, se necessário
+            $cpf = $this->validar_e_corrigir_cpf($docente['cpf_docente']);
+
+            if (!$cpf) {
+                mtrace(sprintf(
+                    'ERRO: CPF inválido para o professor: %s. Não foi possível inscrever na disciplina. Disciplina: %s',
+                    $docente['docente'],
+                    $disciplina->idnumber
+                ));
+                continue;
+            }
+
+            // Atualiza o CPF corrigido no docente
+            $docente['cpf_docente'] = $cpf;
+
             // Busca o usuário pelo CPF
-            $usuariodocente = $this->buscar_professor_por_cpf($docente['cpf_docente']);
+            $usuariodocente = $this->buscar_professor_por_cpf($cpf);
             if (!$usuariodocente) {
                 mtrace(sprintf(
-                    'ERRO: Professor não encontrado. professor: %s, disciplina: %s',
-                    $docente['cpf_docente'],
+                    'ERRO: Professor não encontrado. Professor: %s, Disciplina: %s',
+                    $cpf,
                     $disciplina->idnumber
                 ));
                 continue;
@@ -300,24 +327,43 @@ class sigaa_courses_sync {
             // Realiza inscrição
             $this->vincular_professor($disciplina, $usuariodocente);
 
-            $professorescadastrados[] = $docente['cpf_docente'];
-        }
-
-        // Lança exceção para reverter a transação caso não tenha sido possível cadastrar nenhum professor
-        if (empty($professorescadastrados)) {
-            throw new moodle_exception(sprintf(
-                'ERRO: Não foi possível cadastrar nenhum professor. disciplina: %s',
-                $disciplina->idnumber
-            ));
+            $professorescadastrados[] = $cpf;
         }
     }
+    */
+
+    /*
+    private function validar_e_corrigir_cpf(string $cpf): ?string {
+        // Remove qualquer caractere não numérico
+        $cpf = preg_replace('/\D/', '', $cpf);
+
+        // Verifica se o CPF tem 11 dígitos
+        if (strlen($cpf) !== 11) {
+            // Se o CPF não tiver 11 dígitos, corrige adicionando zeros à esquerda
+            $cpf = str_pad($cpf, 11, '0', STR_PAD_LEFT);
+        }
+
+        // Verifica se o CPF é válido
+        if ($this->validar_cpf($cpf)) {
+            return $cpf;
+        }
+        // Se o CPF não for válido, retorna null
+        return null;
+    }
+
+    private function validar_cpf(string $cpf): bool {
+        // Exemplo de validação simples (aceita qualquer número de 11 dígitos)
+        return preg_match('/^\d{11}$/', $cpf);
+    }
+
+    */
 
     /**
      * Inscreve o professor ao curso e vincula as roles necessárias no contexto do curso.
      *
      * @throws moodle_exception
      * @throws dml_exception
-     */
+
     private function vincular_professor(object $course, object $user): void {
         global $CFG;
         require_once($CFG->dirroot . '/lib/enrollib.php');
@@ -352,5 +398,5 @@ class sigaa_courses_sync {
             $course->idnumber
         ));
     }
-
+    */
 }

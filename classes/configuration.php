@@ -25,8 +25,38 @@
 namespace local_sigaaintegration;
 
 use moodle_exception;
+use local_sigaaintegration\campus;
 
 class configuration {
+
+    // Novo método para pegar todos os clientes e suas configurações
+    public static function getClientListConfig(): array {
+        // Recupera a lista de clientes cadastrados
+        $clients = get_config('local_sigaaintegration', 'clientlist');
+
+        $client_configs = [];
+
+        if ($clients) {
+            // Divide os nomes por linhas ou vírgulas
+            $clientnames = preg_split("/[\r\n,]+/", $clients, -1, PREG_SPLIT_NO_EMPTY);
+
+            foreach ($clientnames as $client) {
+                $client = trim($client);
+
+                $id_campus = get_config('local_sigaaintegration', "id_campus_{$client}");
+                $scheduled_sync = get_config('local_sigaaintegration', "scheduled_sync_{$client}");
+                $modalidade_educacao = get_config('local_sigaaintegration', "modalidade_educacao_{$client}");
+
+                if ($id_campus !== null && $scheduled_sync !== null && $modalidade_educacao !== null) {
+                    $new_client = new campus($id_campus, $client, $scheduled_sync, $modalidade_educacao);
+                    $client_configs[] = $new_client;
+                }
+            }
+
+        }
+
+        return $client_configs;
+    }
 
     public static function getCampoPeriodoLetivo(): object {
         global $DB;

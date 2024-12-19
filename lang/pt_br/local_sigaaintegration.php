@@ -81,6 +81,8 @@ $string['manageintegration'] = 'Integração SIGAA - Gerenciar Integração';
 $string['period'] = 'Período Letivo (ano/período)';
 $string['period_help'] = 'Informe o Período Letivo (ano/período) para qual o processamento será realizado.';
 $string['importenrollments'] = 'Importar matrículas';
+$string['importstudents'] = 'Importar Estudantes';
+$string['importservants'] = 'Import Servidores';
 $string['importcourses'] = 'Importar disciplinas e categorias';
 $string['archivecourses'] = 'Arquivar disciplinas';
 $string['import'] = 'Importar';
@@ -89,3 +91,20 @@ $string['sync_task_name'] = 'Sync Task';
 $string['error:no_enrol_instance'] = 'Manual enrol plugin is disabled.';
 $string['error:user_already_enrolled'] = 'User "{$a->userid}" is already enrolled into course "{$a->courseid}"';
 $string['error:course_already_exists'] = 'Course already exists.';
+
+
+$string['id_campus'] = 'id_campus';
+$string['id_campus_information'] = 'id_campus_information';
+$string['scheduled_sync_information'] = 'scheduled_sync_information';
+$string['scheduled_sync'] = 'scheduled_sync';
+$string['current_term'] = 'current_term';
+$string['current_term_information'] = 'current_term_information';
+$string['error_current_term_format'] = 'O formato do período letivo "{$a}" está incorreto. Por favor, utilize o formato AAAA/N (onde AAAA é o ano e N é o número do semestre, 1 ou 2). Para mais informações, consulte a documentação.';
+
+$string['presencial'] = 'Presencial';
+$string['a_distancia'] = 'A Distância';
+$string['semi_presencial'] = 'Semi-Presencial';
+$string['remoto'] = 'Remoto';
+
+$string['modalidade_educacao'] = 'Modalidade Educação';
+$string['modalidade_educacao_information'] = 'Modalidade Educação';

@@ -39,11 +39,14 @@ class sigaa_enrollments_sync
 
     private int $studentroleid;
 
+    private array $clientlist = [];
+
     public function __construct(string $ano, string $periodo)
     {
         $this->ano = $ano;
         $this->periodo = $periodo;
         $this->studentroleid = configuration::getIdPapelAluno();
+        $this->clientlist = configuration::getClientListConfig();
     }
 
     /**
@@ -53,26 +56,35 @@ class sigaa_enrollments_sync
     public function sync(): void
     {
         // Consulta as matrículas
-        $client = sigaa_api_client::create();
+        $clientapi = sigaa_api_client::create();
         $periodoletivo = sigaa_periodo_letivo::buildFromParameters($this->ano, $this->periodo);
-        $enrollments = $client->get_enrollments($periodoletivo);
 
-        mtrace('INFO: Início da importação de matrículas');
+        if($this->clientlist) {
+            foreach ($this->clientlist as $campus) {
+                mtrace("INFO: Campus ".$campus->description." - Início da importação de matrículas");
 
-        foreach ($enrollments as $key => $value) {
-            mtrace('INFO: Início importação. matrícula: ' . $key);
+                if ($campus->scheduled_sync) {
 
-            try {
-                $this->enroll_student_into_courses($value);
-            } catch (Exception $e) {
-                mtrace(sprintf(
-                    'ERRO: Falha ao processar todas as inscrições do estudante. matrícula: %s, erro: %s',
-                    $key,
-                    $e->getMessage()
-                ));
+                    $enrollments = $clientapi->get_enrollments($campus, $periodoletivo);
+
+                    foreach ($enrollments as $key => $value) {
+                        mtrace('INFO: Início importação. matrícula: ' . $key);
+
+                        try {
+                            $this->enroll_student_into_courses($value);
+                        } catch (Exception $e) {
+                            mtrace(sprintf(
+                                'ERRO: Falha ao processar todas as inscrições do estudante. matrícula: %s, erro: %s',
+                                $key,
+                                $e->getMessage()
+                            ));
+                        }
+                        mtrace('INFO: Fim importação. matrícula: ' . $key);
+                    }
+
+
+                }
             }
-
-            mtrace('INFO: Fim importação. matrícula: ' . $key);
         }
 
         mtrace('INFO: Fim da importação de mátriculas');

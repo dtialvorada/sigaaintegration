@@ -20,8 +20,8 @@
  * @package   local_sigaaintegration
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+use local_sigaaintegration\admin_setting_current_term;
 
-defined('MOODLE_INTERNAL') || die();
 
 $settings = new admin_settingpage(
     'local_sigaaintegration',
@@ -43,59 +43,6 @@ if ($ADMIN->fulltree) {
         new lang_string('apisettings_information', 'local_sigaaintegration')
     ));
 
-    $clientlist = new admin_setting_configtextarea(
-        'local_sigaaintegration/clientlist',
-        new lang_string('clientlist', 'local_sigaaintegration'),
-        new lang_string('clientlist_desc', 'local_sigaaintegration'),
-        '',
-        PARAM_TEXT
-    );
-    $settings->add($clientlist);
-
-    // Recupera a lista de clientes cadastrados
-    $clients = get_config('local_sigaaintegration', 'clientlist');
-    if ($clients) {
-        // Divide os nomes por linhas ou vírgulas
-        $clientnames = preg_split("/[\r\n,]+/", $clients, -1, PREG_SPLIT_NO_EMPTY);
-
-        foreach ($clientnames as $client) {
-            $client = trim($client);
-
-            $settings->add(new admin_setting_heading(
-                'api_config_' . $client,
-                new lang_string('client_config', 'local_sigaaintegration') . ': ' . $client,
-                ''
-            ));
-
-            // Configuração para a URL Base
-            $settings->add(new admin_setting_configtext(
-                "local_sigaaintegration/apibaseurl_{$client}",
-                new lang_string('apibaseurl', 'local_sigaaintegration') . " ({$client})",
-                new lang_string('apibaseurl_information', 'local_sigaaintegration'),
-                '',
-                PARAM_URL
-            ));
-
-            // Configuração para o Client ID
-            $settings->add(new admin_setting_configtext(
-                "ocal_sigaaintegration/apiclientid_{$client}",
-                new lang_string('apiclientid', 'local_sigaaintegration') . " ({$client})",
-                new lang_string('apiclientid_information', 'local_sigaaintegration'),
-                '',
-                PARAM_TEXT
-            ));
-
-            // Configuração para a Senha do Cliente
-            $settings->add(new admin_setting_configpasswordunmask(
-                "ocal_sigaaintegration/apiclientsecret_{$client}",
-                new lang_string('apiclientsecret', 'local_sigaaintegration') . " ({$client})",
-                new lang_string('apiclientsecret_information', 'local_sigaaintegration'),
-                ''
-            ));
-        }
-    }
-
-    /*
     $apibaseurl = new admin_setting_configtext(
         'local_sigaaintegration/apibaseurl',
         new lang_string('apibaseurl', 'local_sigaaintegration'),
@@ -120,7 +67,66 @@ if ($ADMIN->fulltree) {
         ''
     );
     $settings->add($apiclientsecret);
-    */
+
+    $clientlist = new admin_setting_configtextarea(
+        'local_sigaaintegration/clientlist',
+        new lang_string('clientlist', 'local_sigaaintegration'),
+        new lang_string('clientlist_desc', 'local_sigaaintegration'),
+        '',
+        PARAM_TEXT,
+        null, // Não especifica largura (número de colunas).
+        '3'  // Define o número de linhas.
+    );
+    $settings->add($clientlist);
+
+    // Recupera a lista de clientes cadastrados
+    $clients = get_config('local_sigaaintegration', 'clientlist');
+    if ($clients) {
+        // Divide os nomes por linhas ou vírgulas
+        $clientnames = preg_split("/[\r\n,]+/", $clients, -1, PREG_SPLIT_NO_EMPTY);
+
+        foreach ($clientnames as $client) {
+            $client = trim($client);
+
+            $settings->add(new admin_setting_heading(
+                'api_config_' . $client,
+                new lang_string('client_config', 'local_sigaaintegration') . ': ' . $client,
+                ''
+            ));
+
+            // Configuração para o id do campus
+            $settings->add(new admin_setting_configtext(
+                "local_sigaaintegration/id_campus_{$client}",
+                new lang_string('id_campus', 'local_sigaaintegration') . " ({$client})",
+                new lang_string('id_campus_information', 'local_sigaaintegration'),
+                '',
+                PARAM_TEXT
+            ));
+
+            $settings->add(new admin_setting_configcheckbox(
+                "local_sigaaintegration/scheduled_sync_{$client}",
+                new lang_string('scheduled_sync', 'local_sigaaintegration') . " ({$client})",
+                new lang_string('scheduled_sync_information', 'local_sigaaintegration'),
+                0
+            ));
+
+            $settings->add(new admin_setting_configselect(
+                "local_sigaaintegration/modalidade_educacao_{$client}",
+                new lang_string('modalidade_educacao', 'local_sigaaintegration') . " ({$client})",
+                new lang_string('modalidade_educacao_information', 'local_sigaaintegration'),
+                'Nao definido', // Valor padrão
+                [
+                    1 => new lang_string('presencial', 'local_sigaaintegration'),
+                    2 => new lang_string('a_distancia', 'local_sigaaintegration'),
+                    3 => new lang_string('semi_presencial', 'local_sigaaintegration'),
+                    4 => new lang_string('remoto', 'local_sigaaintegration')
+                ]
+            ));
+
+        }
+    }
+
+
     $settings->add(new admin_setting_heading(
         'userfields_settings',
         new lang_string('userfields_settings', 'local_sigaaintegration'),
@@ -160,11 +166,23 @@ if ($ADMIN->fulltree) {
     );
     $settings->add($metadatafieldname);
 
+
+
     $settings->add(new admin_setting_heading(
         'othersettings',
         new lang_string('othersettings', 'local_sigaaintegration'),
         ''
     ));
+
+    $current_term = new admin_setting_current_term(
+        'local_sigaaintegration/current_term',
+        new lang_string('current_term', 'local_sigaaintegration'),
+        new lang_string('current_term_information', 'local_sigaaintegration'),
+        '', // Valor padrão.
+        PARAM_TEXT
+    );
+
+    $settings->add($current_term);
 
     $basecategory = new admin_settings_coursecat_select(
         'local_sigaaintegration/basecategory',

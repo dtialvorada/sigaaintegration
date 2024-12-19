@@ -25,6 +25,26 @@ defined('MOODLE_INTERNAL') || die();
 
 $tasks = [
     [
+        'classname' => 'local_sigaaintegration\task\import_courses_task',
+
+        'blocking' => 0,
+
+        // Every month.
+        'month' => '*',
+
+        // Every day.
+        'day' => '*',
+
+        // Every day of week.
+        'dayofweek' => '*',
+
+        // At 4am
+        'hour' => '4',
+
+        // At a random minute
+        'minute' => 'R',
+    ],
+    [
         'classname' => 'local_sigaaintegration\task\import_enrollments_task',
 
         'blocking' => 0,
@@ -44,4 +64,44 @@ $tasks = [
         // At a random minute
         'minute' => 'R',
     ],
+    [
+        'classname' => 'local_sigaaintegration\task\import_students_task',
+
+        'blocking' => 0,
+
+        // Every month.
+        'month' => '*',
+
+        // Every day.
+        'day' => '*',
+
+        // Every day of week.
+        'dayofweek' => '*',
+
+        // At 4am
+        'hour' => '4',
+
+        // At a random minute
+        'minute' => 'R',
+    ],
+    [
+        'classname' => 'local_sigaaintegration\task\import_servants_task',
+
+        'blocking' => 0,
+
+        // Every month.
+        'month' => '*',
+
+        // Every day.
+        'day' => '*',
+
+        // Every day of week.
+        'dayofweek' => '*',
+
+        // At 4am
+        'hour' => '4',
+
+        // At a random minute
+        'minute' => 'R',
+    ]
 ];

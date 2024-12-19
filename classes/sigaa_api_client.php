@@ -38,6 +38,10 @@ class sigaa_api_client  {
 
     private const ENROLLMENTS_URL = "/api/v1/sig/sigaa/matriculados";
 
+    private const SERVANTS_URL = "/api/v1/sig/servidores";
+
+    private const COURSES_URL = "/api/v1/sig/sigaa/cursos";
+
     private const OAUTH_TOKEN_URL = "/oauth/token";
 
     public function __construct($apibaseurl, $apiclientid, $apiclientsecret) {
@@ -55,13 +59,14 @@ class sigaa_api_client  {
         return new sigaa_api_client($apibaseurl, $apiclientid, $apiclientsecret);
     }
 
-    public function get_enrollments(sigaa_periodo_letivo $periodoletivo) : array {
+    public function get_enrollments(campus $campus, sigaa_periodo_letivo $periodoletivo) : array {
         $response = $this->get_http_client()->get($this->apibaseurl . self::ENROLLMENTS_URL, [
             'headers' => [
                 'Content-Type' => 'application/json',
                 'Authorization' => "Bearer {$this->get_access_token()}",
             ],
             'query' => [
+                'unidade' => $campus->id_campus,
                 'periodo_letivo' => $periodoletivo->getPeriodoFormatado(),
             ]
         ]);
@@ -78,6 +83,58 @@ class sigaa_api_client  {
 
         return $this->decode($response->getBody()->getContents());
     }
+
+    public function get_courses_sigaa($id_campus, $modalidade_educacao) : array {
+
+        $response = $this->get_http_client()->get($this->apibaseurl . self::COURSES_URL, [
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Authorization' => "Bearer {$this->get_access_token()}",
+            ],
+            'query' => [
+                'campus' => $id_campus,
+                'modalidade_educacao' => $modalidade_educacao,
+            ]
+        ]);
+
+        if ($response->getStatusCode() !== 200) {
+            throw new moodle_exception(
+                sprintf(
+                    "ERRO: Falha ao buscar matrículas na API do SIGAA. statusCode: %s, responseBody: %s",
+                    $response->getStatusCode(),
+                    $response->getBody()->getContents()
+                )
+            );
+        }
+
+        return  $this->decode($response->getBody()->getContents());
+    }
+
+    public function get_servants($status) : array {
+        $response = $this->get_http_client()->get($this->apibaseurl . self::SERVANTS_URL, [
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Authorization' => "Bearer {$this->get_access_token()}",
+            ],
+            'query' => [
+                'status' => $status,
+            ]
+        ]);
+
+
+        if ($response->getStatusCode() !== 200) {
+            throw new moodle_exception(
+                sprintf(
+                    "ERRO: Falha ao buscar matrículas na API do SIGAA. statusCode: %s, responseBody: %s",
+                    $response->getStatusCode(),
+                    $response->getBody()->getContents()
+                )
+            );
+        }
+
+        return $this->decode($response->getBody()->getContents());
+    }
+
 
     protected function get_access_token() : string {
         $response = $this->get_http_client()->post($this->apibaseurl . self::OAUTH_TOKEN_URL, [
