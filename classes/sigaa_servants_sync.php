@@ -39,8 +39,9 @@ class sigaa_servants_sync extends sigaa_base_sync
         return $novos;
     }
 
-    protected function process_records(array $records): void
+    protected function process_records(array $records, $campus): void
     {
+        mtrace("Processando dados: ". $campus->description);
         foreach ($records as $key => $record) {
             try {
                 $this->user_moodle->insert($record);

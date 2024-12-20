@@ -11,7 +11,6 @@ class user_moodle
     public function insert(array $record): string {
         global $DB, $CFG;
 
-        mtrace("Inserindo");
         if (!$this->is_user_registered_by_login($record['login'])) {
             // Validação dos dados do usuário
             $this->validate_user_data($record);

@@ -58,6 +58,7 @@ $string['importenrollments'] = 'Import enrollments';
 $string['importstudents'] = 'Import students';
 $string['importservants'] = 'Import servants';
 $string['importcourses'] = 'Import courses';
+$string['importcategories'] = 'Import categories';
 $string['archivecourses'] = 'Archive courses';
 $string['import'] = 'Import';
 $string['archive'] = 'Archive';
