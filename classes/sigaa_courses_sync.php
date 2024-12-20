@@ -13,8 +13,6 @@ class sigaa_courses_sync extends sigaa_base_sync{
 
     private string $periodo;
 
-    private array $courses_created = [];
-
     private sigaa_api_client $data_api;
 
     private course_moodle $course_moodle;
@@ -53,6 +51,7 @@ class sigaa_courses_sync extends sigaa_base_sync{
     }
 
     private function get_courses_to_create($campus, $enrollments): ?array {
+        $courses_created = [];
         try {
             foreach ($enrollments as $enrollment) {
                 foreach ($enrollment['disciplinas'] as $disciplina) {
@@ -62,13 +61,13 @@ class sigaa_courses_sync extends sigaa_base_sync{
                         isset($disciplina['turma']) &&
                         $disciplina['turma'] !== null) {
                         $course_idnumber = $this->course_moodle->generate_course_idnumber($campus, $enrollment, $disciplina);
-                        if (!array_key_exists($course_idnumber, $this->courses_created)) {
+                        if (!array_key_exists($course_idnumber, $courses_created)) {
                             if (!$this->course_moodle->course_exists($course_idnumber)) {
                                 $category_idnumber = $this->course_moodle->generate_category_level_three_id($campus, $enrollment['id_curso'], $disciplina);
                                 $category = $this->course_moodle->get_category_for_discipline($category_idnumber);
                                 if ($category) {
                                     //$this->create_course_for_discipline($disciplina, $enrollment, $category, $course_idnumber);
-                                    $this->courses_created[$course_idnumber] = [
+                                    $courses_created[$course_idnumber] = [
                                         'disciplina' => $disciplina,
                                         'enrollment' => $enrollment,
                                         'category' => $category->id,
@@ -81,15 +80,13 @@ class sigaa_courses_sync extends sigaa_base_sync{
                                 }
                             }
                         }
-
                     }
                 }
             }
         } catch (Exception $exception) {
             mtrace('ERRO: Falha ao importar disciplina. erro:' . $exception->getMessage());
         }
-        //var_dump($this->courses_created);
-        return $this->courses_created;
+        return $courses_created;
 
     }
 
