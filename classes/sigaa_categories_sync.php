@@ -38,31 +38,35 @@ class sigaa_categories_sync extends sigaa_base_sync{
     protected function process_records(array $records, $campus): void
     {
         try {
-            // Em cada processamento é verificado a criação da categoria com o nome do campus
+            // Em cada processamento é verificado, uma vez, a criação da categoria com o nome do campus
             if (!$this->category_exists($campus->id_campus)) {
                 $courses = $this->sigaa_courses_manager->get_courses_by_campus($campus);
                 $this->create_category($courses['campus_descricao'], $campus->id_campus, $this->basecategoryid);
             }
 
-            // TODO: Alterar a logica de in_array para isset
             foreach ($records as $course_discipline) {
+                // Adiciona o índice no array de controle,
+                // Adiciona true para operar junto com a função isset
+
                 // Criação do nível 1 (curso)
-                if (!in_array($course_discipline->course_id, $this->category_level_one_created)) {
+                $idnumber_level_one = $this->generate_category_level_two_id($campus, $course_discipline);
+                if (!isset($this->category_level_one_created[$idnumber_level_one])) {
                     $this->create_category_level_one($campus, $course_discipline);
-                    $this->category_level_one_created[] = $course_discipline->course_id;
+                    $this->category_level_one_created[$idnumber_level_one] = true;
                 }
+
                 // Criação do nível 2 (período)
-                $idnumber_level_two = "{$campus->id_campus}.{$course_discipline->course_id}.{$course_discipline->period}";
-                if (!in_array($idnumber_level_two, $this->category_level_two_created)) {
-                    $this->create_category_level_two($campus, $course_discipline, $idnumber_level_two);
-                    $this->category_level_two_created[] = $idnumber_level_two;
+                $idnumber_level_two = $this->generate_category_level_two_id($campus, $course_discipline);
+                if (!isset($this->category_level_two_created[$idnumber_level_two])) {
+                    $this->create_category_level_two($campus, $course_discipline);
+                    $this->category_level_two_created[$idnumber_level_two] = true;
                 }
 
                 // Criação do nível 3 (semestre ou ano)
                 $idnumber_level_three = $this->generate_category_level_three_id($campus, $course_discipline);
-                if (!in_array($idnumber_level_three, $this->category_level_three_created)) {
+                if (!isset($this->category_level_three_created[$idnumber_level_three])) {
                     $this->create_category_level_three($campus, $course_discipline);
-                    $this->category_level_three_created[] = $idnumber_level_three;
+                    $this->category_level_three_created[$idnumber_level_three] = true;
                 }
 
 
@@ -95,6 +99,9 @@ class sigaa_categories_sync extends sigaa_base_sync{
 
     }
 
+    private function generate_category_level_one_id(campus $campus, course_discipline $course_discipline ) {
+        return "{$campus->id_campus}.{$course_discipline->course_id}";
+    }
     private function create_category_level_one(campus $campus, $course_discipline) {
         global $DB;
 
@@ -105,20 +112,25 @@ class sigaa_categories_sync extends sigaa_base_sync{
         }
 
         $name = $course_discipline->course_name;  // Nome do curso
-        $idnumber = "{$campus->id_campus}.{$course_discipline->course_id}"; // ID da categoria
+        $idnumber = $this->generate_category_level_one_id($campus, $course_discipline); // ID da categoria
 
         // Verifica se a categoria já existe antes de criar
         if (!$this->category_exists($idnumber)) {
             $this->create_category($name, $idnumber, $parentCategory->id);
         }
     }
-
-    private function create_category_level_two($campus, course_discipline $course_discipline, $idnumber_level_two) {
+    private function generate_category_level_two_id(campus $campus, course_discipline $course_discipline ) {
+        return "{$campus->id_campus}.{$course_discipline->course_id}.{$course_discipline->period}";
+    }
+    private function create_category_level_two(campus $campus, course_discipline $course_discipline) {
         global $DB;
 
-        $parentCategory = $DB->get_record('course_categories', ['idnumber' => "{$campus->id_campus}.{$course_discipline->course_id}"]);
+        $idnumber_parent = $this->generate_category_level_one_id($campus, $course_discipline);
+        $parentCategory = $DB->get_record('course_categories', ['idnumber' => $idnumber_parent]);
+
+        $idnumber_level_two = $this->generate_category_level_two_id($campus, $course_discipline);
         if ($parentCategory && !$this->category_exists($idnumber_level_two)) {
-            $period = $this->removerZeroNoPeriodo($course_discipline->period);
+            $period = $this->remove_zero_from_period($course_discipline->period);
             $this->create_category($period, $idnumber_level_two, $parentCategory->id);
         }
     }
@@ -132,7 +144,7 @@ class sigaa_categories_sync extends sigaa_base_sync{
 
         // algumas vezes o semestre_oferta_disciplina está vazio
         if (isset($course_discipline->period) && isset($course_discipline->semester_offered)) {
-            $idnumber_parent = "{$campus->id_campus}.{$course_discipline->course_id}.{$course_discipline->period}";
+            $idnumber_parent = $this->generate_category_level_two_id($campus, $course_discipline);
             $parentCategory = $DB->get_record('course_categories', ['idnumber' => $idnumber_parent]);
 
             if ($parentCategory) {
@@ -178,14 +190,14 @@ class sigaa_categories_sync extends sigaa_base_sync{
         return $DB->record_exists('course_categories', ['idnumber' => $idnumber]);
     }
 
-    private function removerZeroNoPeriodo($periodo) {
+    private function remove_zero_from_period($period) {
         // Verifica se o valor após a barra é 0
-        if (substr($periodo, -2) === '/0') {
+        if (substr($period, -2) === '/0') {
             // Remove a parte "/0" da string
-            return substr($periodo, 0, -2);
+            return substr($period, 0, -2);
         }
         // Caso não tenha "/0", retorna o valor original
-        return $periodo;
+        return $period;
     }
 
     private function get_year_or_semester_suffix($period) {
