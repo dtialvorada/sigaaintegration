@@ -5,7 +5,6 @@ use core\context;
 use core_user;
 use Exception;
 
-
 abstract class sigaa_base_sync
 {
     //Lista de Campi

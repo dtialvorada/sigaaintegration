@@ -10,7 +10,7 @@ use stdClass;
 
 class sigaa_categories_sync extends sigaa_base_sync{
 
-    private string $yaar;
+    private string $year;
     private string $period;
     private int $basecategoryid;
     private array $category_level_one_created = [];
@@ -21,7 +21,7 @@ class sigaa_categories_sync extends sigaa_base_sync{
 
     public function __construct(string $year, string $period) {
         parent::__construct();
-        $this->yaar = $year;
+        $this->year = $year;
         $this->period = $period;
         $this->basecategoryid = configuration::getIdCategoriaBase();
         $this->sigaa_courses_manager = new sigaa_courses_manager($this->api_client);
@@ -30,7 +30,7 @@ class sigaa_categories_sync extends sigaa_base_sync{
     protected function get_records(campus $campus): array
     {
         mtrace('INFO: Importando disciplinas e categorias...');
-        $periodoletivo = sigaa_periodo_letivo::buildFromParameters($this->yaar, $this->period);
+        $periodoletivo = sigaa_periodo_letivo::buildFromParameters($this->year, $this->period);
         $enrollments = $this->api_client->get_enrollments($campus, $periodoletivo);
         return $this->get_all_course_discipline($campus, $enrollments);
     }
@@ -69,7 +69,6 @@ class sigaa_categories_sync extends sigaa_base_sync{
                     $this->category_level_three_created[$idnumber_level_three] = true;
                 }
 
-
             }
         } catch (Exception $e) {
             mtrace(sprintf('ERROR: Falha ao processar registros, erro: %s', $e->getMessage()));
@@ -84,7 +83,6 @@ class sigaa_categories_sync extends sigaa_base_sync{
         foreach ($enrollments as $enrollment => $student) {
             // Percorrendo as disciplinas do aluno
             foreach ($student["disciplinas"] as $discipline) {
-
                 // Mapeia os dados da disciplina para o objeto course_discipline
                 $discipline_obj = $this->map_to_course_discipline($student, $discipline);
 
@@ -106,17 +104,19 @@ class sigaa_categories_sync extends sigaa_base_sync{
         global $DB;
 
         // Obtém a categoria pai para o campus
-        $parentCategory = $DB->get_record('course_categories', ['idnumber' => $campus->id_campus]);
-        if (!$parentCategory) {
+        $parent_category = $DB->get_record('course_categories', ['idnumber' => $campus->id_campus]);
+        if (!$parent_category) {
             throw new Exception("Categoria pai não encontrada para o campus: " . $campus->description);
         }
 
-        $name = $course_discipline->course_name;  // Nome do curso
-        $idnumber = $this->generate_category_level_one_id($campus, $course_discipline); // ID da categoria
+        // Nome do curso
+        $name = $course_discipline->course_name;
+        // ID da categoria
+        $idnumber = $this->generate_category_level_one_id($campus, $course_discipline);
 
         // Verifica se a categoria já existe antes de criar
         if (!$this->category_exists($idnumber)) {
-            $this->create_category($name, $idnumber, $parentCategory->id);
+            $this->create_category($name, $idnumber, $parent_category->id);
         }
     }
     private function generate_category_level_two_id(campus $campus, course_discipline $course_discipline ) {
@@ -125,13 +125,13 @@ class sigaa_categories_sync extends sigaa_base_sync{
     private function create_category_level_two(campus $campus, course_discipline $course_discipline) {
         global $DB;
 
-        $idnumber_parent = $this->generate_category_level_one_id($campus, $course_discipline);
-        $parentCategory = $DB->get_record('course_categories', ['idnumber' => $idnumber_parent]);
+        $parent_idnumber = $this->generate_category_level_one_id($campus, $course_discipline);
+        $parent_category = $DB->get_record('course_categories', ['idnumber' => $parent_idnumber]);
 
         $idnumber_level_two = $this->generate_category_level_two_id($campus, $course_discipline);
-        if ($parentCategory && !$this->category_exists($idnumber_level_two)) {
+        if ($parent_category && !$this->category_exists($idnumber_level_two)) {
             $period = $this->remove_zero_from_period($course_discipline->period);
-            $this->create_category($period, $idnumber_level_two, $parentCategory->id);
+            $this->create_category($period, $idnumber_level_two, $parent_category->id);
         }
     }
 
@@ -144,10 +144,10 @@ class sigaa_categories_sync extends sigaa_base_sync{
 
         // algumas vezes o semestre_oferta_disciplina está vazio
         if (isset($course_discipline->period) && isset($course_discipline->semester_offered)) {
-            $idnumber_parent = $this->generate_category_level_two_id($campus, $course_discipline);
-            $parentCategory = $DB->get_record('course_categories', ['idnumber' => $idnumber_parent]);
+            $parent_idnumber = $this->generate_category_level_two_id($campus, $course_discipline);
+            $parent_category = $DB->get_record('course_categories', ['idnumber' => $parent_idnumber]);
 
-            if ($parentCategory) {
+            if ($parent_category) {
                 // Gera o identificador do nível 3
                 $idnumber = $this->generate_category_level_three_id($campus, $course_discipline);
 
@@ -157,28 +157,28 @@ class sigaa_categories_sync extends sigaa_base_sync{
                     $name = "{$course_discipline->semester_offered}" . $this->get_year_or_semester_suffix($course_discipline->period);
                 }
                 if (!$this->category_exists($idnumber)) {
-                    $this->create_category($name, $idnumber, $parentCategory->id);
+                    $this->create_category($name, $idnumber, $parent_category->id);
 
                 }
             }
         }
     }
 
-    private function create_category($name, $idnumber, $parentId) {
+    private function create_category($name, $idnumber, $parent_id) {
         global $DB;
 
-        $categoriacurso = $DB->get_record('course_categories', ['idnumber' => $idnumber]);
-        if (!$categoriacurso) {
+        $course_category_record = $DB->get_record('course_categories', ['idnumber' => $idnumber]);
+        if (!$course_category_record) {
             $category = new stdClass();
             $category->name = string_helper::capitalize($name);
             $category->idnumber = $idnumber;
-            $category->parent = $parentId;
+            $category->parent = $parent_id;
 
-            $categoriacurso = core_course_category::create($category);
+            $course_category_record = core_course_category::create($category);
 
             mtrace(sprintf(
                 'INFO: Categoria criada. idnumber: %s, Nome: %s',
-                $categoriacurso->idnumber,
+                $course_category_record->idnumber,
                 $category->name
             ));
         }
