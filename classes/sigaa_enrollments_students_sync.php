@@ -41,10 +41,10 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
 
     private array $clientlist = [];
 
-    public function __construct(string $ano, string $periodo)
+    public function __construct(string $year, string $period)
     {
-        $this->ano = $ano;
-        $this->periodo = $periodo;
+        $this->ano = $year;
+        $this->periodo = $period;
         $this->studentroleid = configuration::getIdPapelAluno();
         $this->clientlist = configuration::getClientListConfig();
     }

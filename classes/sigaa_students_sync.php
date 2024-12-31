@@ -15,11 +15,11 @@ class sigaa_students_sync extends sigaa_base_sync
 
     private user_moodle $user_moodle;
 
-    public function __construct(string $ano, string $periodo)
+    public function __construct(string $year, string $period)
     {
         parent::__construct();
-        $this->ano = $ano;
-        $this->periodo = $periodo;
+        $this->ano = $year;
+        $this->periodo = $period;
         $this->user_moodle = new user_moodle();
     }
 

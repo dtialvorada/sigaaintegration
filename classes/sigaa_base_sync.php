@@ -11,27 +11,24 @@ abstract class sigaa_base_sync
     //Lista de Campi
     private array $clientlist = [];
 
+    protected sigaa_api_client $api_client;
+
     public function __construct(){
         $this->clientlist = configuration::getClientListConfig();
+        $this->api_client = sigaa_api_client::create();
     }
-    abstract protected function get_records($client_api, campus $campus): array;
+    abstract protected function get_records(campus $campus): array;
     abstract protected function process_records(array $records, campus $campus): void;
 
-    protected function get_api_client()
-    {
-        return sigaa_api_client::create();
-    }
 
     public function sync(): void
     {
         global $DB;
-
-        $client_api = $this->get_api_client();
         if($this->clientlist) {
             foreach ($this->clientlist as $campus) {
                 mtrace("Campus " . $campus->description . " - Início da Sincronização...");
                 if ($campus->scheduled_sync) {
-                    $records = $this->get_records($client_api, $campus);
+                    $records = $this->get_records($campus);
 
                     mtrace('INFO: Início da sincronização. Total de registros: ' . count($records));
 

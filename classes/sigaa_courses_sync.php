@@ -17,10 +17,10 @@ class sigaa_courses_sync extends sigaa_base_sync{
 
     private course_moodle $course_moodle;
 
-    public function __construct(string $ano, string $periodo) {
+    public function __construct(string $year, string $period) {
         parent::__construct();
-        $this->ano = $ano;
-        $this->periodo = $periodo;
+        $this->ano = $year;
+        $this->periodo = $period;
         $this->data_api = sigaa_api_client::create();
         $this->course_moodle = new course_moodle();
     }

@@ -15,11 +15,11 @@ class sigaa_servants_sync extends sigaa_base_sync
 
     private sigaa_servants_manager $sigaa_servants;
 
-    public function __construct(string $ano, string $periodo)
+    public function __construct(string $year, string $period)
     {
         parent::__construct();
-        $this->ano = $ano;
-        $this->periodo = $periodo;
+        $this->ano = $year;
+        $this->periodo = $period;
         $this->user_moodle = new user_moodle();
         $this->sigaa_servants = new sigaa_servants_manager($this->get_api_client());
 
