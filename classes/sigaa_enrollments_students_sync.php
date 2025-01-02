@@ -39,20 +39,21 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
 
     private int $studentroleid;
 
-    private array $clientlist = [];
+    private $course_discipline_mapper;
 
     public function __construct(string $year, string $period)
     {
+        parent::__construct();
         $this->ano = $year;
         $this->periodo = $period;
         $this->studentroleid = configuration::getIdPapelAluno();
-        $this->clientlist = configuration::getClientListConfig();
+        $this->course_discipline_mapper = new course_discipline_mapper();
     }
 
-    protected function get_records($client_api, campus $campus): array
+    protected function get_records(campus $campus): array
     {
         $periodoletivo = sigaa_periodo_letivo::buildFromParameters($this->ano, $this->periodo);
-        return $client_api->get_enrollments($campus, $periodoletivo);
+        return $this->api_client->get_enrollments($campus, $periodoletivo);
     }
 
     protected function process_records(campus $campus, array $records): void
@@ -61,12 +62,11 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
             $this->enroll_student_into_courses($campus, $records);
         } catch (Exception $e) {
             mtrace(sprintf(
-                'ERRO: Falha ao processar todas as inscrições do estudante. matrícula: %s, erro: %s',
-                $key,
+                'ERRO: Falha ao processar todas as inscrições do estudante. erro: %s',
                 $e->getMessage()
             ));
         }
-        mtrace('INFO: Fim importação. matrícula: ' . $key);
+        mtrace('INFO: Fim importação.');
     }
 
     /**
@@ -91,20 +91,6 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
     }
 
     /**
-     * Monta o código de integração do curso concatenando os campos Período + "-" + Código da Disciplina.
-     *
-     * Exemplo:
-     * - Período: "2024/1"
-     * - Código da Disciplina: "POA-SSI405"
-     *
-     * Retorno esperado: "2024/1-POA-SSI405"
-     */
-    private function build_course_idnumber(array $enrollment): string
-    {
-        return $enrollment['periodo'] . '-' . $enrollment['cod_disciplina'];
-    }
-
-    /**
      * Busca estudante pelo login/CPF.
      */
     private function search_student(string $login): object|false
@@ -122,11 +108,14 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
         require_once($CFG->dirroot . '/lib/enrollib.php');
 
         if (is_enrolled(context\course::instance($course->id), $user)) {
+
+            /*
             mtrace(sprintf(
                 "INFO: O estudante já está inscrito na disciplina. usuário: %s, disciplina: %s",
                 $user->username,
                 $course->idnumber
             ));
+            */
             return;
         }
 
@@ -154,10 +143,11 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
     /**
      * Tenta inscrever o estudante nas disciplinas retornadas pela API do SIGAA.
      */
-    private function enroll_student_into_courses($campus,array $enrollments): void
+    private function enroll_student_into_courses($campus, array $enrollments): void
     {
         foreach ($enrollments as $enrollment) {
             $user = $this->search_student($enrollment['login']);
+            mtrace($enrollment['login']);
             if (!$user) {
                 mtrace(sprintf('ERRO: Usuário não encontrado. usuário: %s', $enrollment['login']));
                 return;
@@ -165,9 +155,12 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
 
             foreach ($enrollment['disciplinas'] as $course_enrollment) {
                 try {
-                    // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
-                    $courseidnumber = $this->build_course_idnumber($course_enrollment);
-                    $this->enroll_student_into_single_course($user, $courseidnumber);
+                    if($this->validate($course_enrollment)) {
+                        // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
+                        $course_discipline = $this->course_discipline_mapper->map_to_course_discipline($enrollment, $course_enrollment);
+                        $courseidnumber = $course_discipline->generate_course_idnumber($campus);
+                        $this->enroll_student_into_single_course($user, $courseidnumber);
+                    }
                 } catch (Exception $e) {
                     mtrace(sprintf(
                         'ERRO: Falha ao processar inscrição de estudante em uma disciplina. ' .
@@ -198,6 +191,15 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
         }
 
         $this->enroll_student($course, $user);
+    }
+
+    private function validate(array $discipline): bool {
+        // Valida os campos necessários da disciplina
+        return isset($discipline['periodo']) &&
+            isset($discipline['semestre_oferta_disciplina']) &&
+            $discipline['semestre_oferta_disciplina'] !== null &&
+            isset($discipline['turma']) &&
+            $discipline['turma'] !== null;
     }
 
 

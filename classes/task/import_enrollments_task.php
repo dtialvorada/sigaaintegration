@@ -25,7 +25,7 @@
 namespace local_sigaaintegration\task;
 
 use core\task\scheduled_task;
-use local_sigaaintegration\sigaa_enrollments_sync;
+use local_sigaaintegration\sigaa_enrollments_students_sync;
 use local_sigaaintegration\sigaa_periodo_letivo;
 
 class import_enrollments_task extends scheduled_task {
@@ -41,7 +41,7 @@ class import_enrollments_task extends scheduled_task {
 
     public function execute() {
         $period = sigaa_periodo_letivo::buildNew();
-        $enrollmentssync = new sigaa_enrollments_sync($period->getAno(), $period->getPeriodo());
+        $enrollmentssync = new sigaa_enrollments_students_sync($period->getAno(), $period->getPeriodo());
         $enrollmentssync->sync();
     }
 

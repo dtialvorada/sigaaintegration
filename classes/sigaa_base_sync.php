@@ -24,6 +24,7 @@ abstract class sigaa_base_sync
         global $DB;
         if($this->clientlist) {
             foreach ($this->clientlist as $campus) {
+
                 mtrace("Campus " . $campus->description . " - Início da Sincronização...");
                 if ($campus->scheduled_sync) {
                     $records = $this->get_records($campus);

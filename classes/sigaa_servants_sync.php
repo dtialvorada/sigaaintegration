@@ -21,15 +21,15 @@ class sigaa_servants_sync extends sigaa_base_sync
         $this->ano = $year;
         $this->periodo = $period;
         $this->user_moodle = new user_moodle();
-        $this->sigaa_servants = new sigaa_servants_manager($this->get_api_client());
+        $this->sigaa_servants = new sigaa_servants_manager($this->api_client);
 
     }
 
-    protected function get_records($client_api, $campus): array
+    protected function get_records(campus $campus): array
     {
         try {
             $periodoletivo = sigaa_periodo_letivo::buildFromParameters($this->ano, $this->periodo);
-            $enrollments =  $client_api->get_enrollments($campus, $periodoletivo);
+            $enrollments =  $this->api_client->get_enrollments($campus, $periodoletivo);
             $docentes = $this->get_records_docentes($enrollments);
             $novos = $this->teachres_to_register($docentes);
         } catch (Exception $e) {

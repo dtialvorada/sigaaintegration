@@ -13,11 +13,13 @@ class sigaa_courses_sync extends sigaa_base_sync{
     private string $year;
     private string $period;
 
+    private $course_discipline_mapper;
 
     public function __construct(string $year, string $period) {
         parent::__construct();
         $this->year = $year;
         $this->period = $period;
+        $this->course_discipline_mapper = new course_discipline_mapper();
     }
 
     protected function get_records(campus $campus): array
@@ -53,7 +55,7 @@ class sigaa_courses_sync extends sigaa_base_sync{
             $shortname = "{$course_discipline->discipline_code} / {$course_discipline->course_id} / {$class_group} / {$course_discipline->semester_offered}" . $this->get_year_or_semester_suffix($course_discipline->period) . " / {$course_discipline->period}";
 
 
-            $course_idnumber = $this->generate_course_idnumber($campus, $course_discipline);
+            $course_idnumber = $course_discipline->generate_course_idnumber($campus);
             if (!$this->course_exists($course_idnumber)) {
                 $category_idnumber = $this->generate_category_level_three_id($campus, $course_discipline);
                 $category = $this->get_category_for_discipline($category_idnumber);
@@ -89,46 +91,6 @@ class sigaa_courses_sync extends sigaa_base_sync{
 
     }
 
-    private function get_courses_to_create($campus, $enrollments): ?array {
-        $courses_created = [];
-        try {
-            foreach ($enrollments as $enrollment) {
-                foreach ($enrollment['disciplinas'] as $disciplina) {
-                    if (isset($disciplina['periodo']) &&
-                        isset($disciplina['semestre_oferta_disciplina']) &&
-                        $disciplina['semestre_oferta_disciplina'] !== null &&
-                        isset($disciplina['turma']) &&
-                        $disciplina['turma'] !== null) {
-                        $course_idnumber = $this->course_moodle->generate_course_idnumber($campus, $enrollment, $disciplina);
-                        if (!array_key_exists($course_idnumber, $courses_created)) {
-                            if (!$this->course_moodle->course_exists($course_idnumber)) {
-                                $category_idnumber = $this->course_moodle->generate_category_level_three_id($campus, $enrollment['id_curso'], $disciplina);
-                                $category = $this->course_moodle->get_category_for_discipline($category_idnumber);
-                                if ($category) {
-                                    //$this->create_course_for_discipline($disciplina, $enrollment, $category, $course_idnumber);
-                                    $courses_created[$course_idnumber] = [
-                                        'disciplina' => $disciplina,
-                                        'enrollment' => $enrollment,
-                                        'category' => $category->id,
-                                        'course_idnumber' => $course_idnumber
-                                    ];
-                                    mtrace("add " . $course_idnumber );
-                                    // $this->courses_created[] = $course_idnumber;
-                                } else {
-                                    mtrace("ERRO: Categoria não cadastrada: " . $category_idnumber);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception $exception) {
-            mtrace('ERROR: Falha ao importar disciplina. erro:' . $exception->getMessage());
-        }
-        return $courses_created;
-
-    }
-
     private function get_all_course_discipline($campus, $enrollments): ?array {
         // Inicializando um array para armazenar objetos course_discipline únicos
         $disciplines = [];
@@ -141,10 +103,10 @@ class sigaa_courses_sync extends sigaa_base_sync{
                 // Valida a disciplina
                 if ($this->validate($discipline)) {
                     // Mapeia os dados da disciplina para o objeto course_discipline
-                    $discipline_obj = $this->map_to_course_discipline($student, $discipline);
+                    $discipline_obj = $this->course_discipline_mapper->map_to_course_discipline($student, $discipline);
 
                     // Filtra pelo idnumber da disciplina
-                    $id = $this->generate_course_idnumber($campus, $discipline_obj);
+                    $id = $discipline_obj->generate_course_idnumber($campus);
                     if (!isset($disciplines[$id])) {
                         $disciplines[$id] = $discipline_obj;
                     }
@@ -171,34 +133,6 @@ class sigaa_courses_sync extends sigaa_base_sync{
         return (substr($period, -1) === '0') ? 'º ano' : 'º semestre';
     }
 
-    private function map_to_course_discipline($student, $discipline): course_discipline {
-        $course_data = [
-            "course_id" => $student["id_curso"],
-            "course_code" => $student["cod_curso"],
-            "course_name" => $student["curso"],
-            "course_level" => $student["curso_nivel"],
-            "status" => $student["status"]
-        ];
-
-        return new course_discipline(
-            $course_data["course_id"],
-            $course_data["course_code"],
-            $course_data["course_name"],
-            $course_data["course_level"],
-            $course_data["status"],
-            $discipline["disciplina"],
-            $discipline["cod_disciplina"],
-            $discipline["id_disciplina"],
-            $discipline["semestre_oferta_disciplina"],
-            $discipline["periodo"],
-            $discipline["situacao_matricula"],
-            $discipline["turma"],
-            $discipline["modalidade_educacao_turma"],
-            $discipline["turno_turma"]
-        );
-    }
-
-
     public function get_category_for_discipline($idnumber) {
         global $DB;
         return $DB->get_record('course_categories', ['idnumber' => $idnumber]);
@@ -217,11 +151,6 @@ class sigaa_courses_sync extends sigaa_base_sync{
         }
         // Caso não tenha "/0", retorna o valor original
         return $periodo;
-    }
-
-    public function generate_course_idnumber(campus $campus, course_discipline $course_discipline) {
-        $class_group = str_replace(' ', '', $course_discipline->class_group);
-        return "{$campus->id_campus}.{$course_discipline->course_id}.{$course_discipline->discipline_id}.{$class_group}.{$course_discipline->period}.{$course_discipline->semester_offered}";
     }
 
     private function generate_category_level_three_id(campus $campus, course_discipline $course_discipline) {

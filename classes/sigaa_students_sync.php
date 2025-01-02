@@ -23,10 +23,10 @@ class sigaa_students_sync extends sigaa_base_sync
         $this->user_moodle = new user_moodle();
     }
 
-    protected function get_records($client_api, $campus): array
+    protected function get_records($campus): array
     {
         $periodoletivo = sigaa_periodo_letivo::buildFromParameters($this->ano, $this->periodo);
-        return $client_api->get_enrollments($campus, $periodoletivo);
+        return $this->api_client->get_enrollments($campus, $periodoletivo);
     }
 
     protected function process_records(campus $campus, array $records): void

@@ -24,7 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2024122004;
+$plugin->version = 2025010103;
 $plugin->requires = 2023100400;
 $plugin->component = 'local_sigaaintegration';
 $plugin->maturity = MATURITY_STABLE;

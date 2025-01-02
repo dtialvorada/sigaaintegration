@@ -55,4 +55,9 @@ class course_discipline
             $this->education_mode === $other->education_mode;
     }
 
+    public function generate_course_idnumber(campus $campus) {
+        $class_group = str_replace(' ', '', $this->class_group);
+        return "{$campus->id_campus}.{$this->course_id}.{$this->discipline_id}.{$class_group}.{$this->period}.{$this->semester_offered}";
+    }
+
 }
