@@ -2,50 +2,89 @@
 namespace local_sigaaintegration;
 
 use core\context;
-use core_course_category;
+use core_user;
 use dml_exception;
 use Exception;
+
 use moodle_exception;
 
 class sigaa_courses_sync extends sigaa_base_sync{
 
-    private string $ano;
+    private string $year;
+    private string $period;
 
-    private string $periodo;
-
-    private sigaa_api_client $data_api;
-
-    private course_moodle $course_moodle;
 
     public function __construct(string $year, string $period) {
         parent::__construct();
-        $this->ano = $year;
-        $this->periodo = $period;
-        $this->data_api = sigaa_api_client::create();
-        $this->course_moodle = new course_moodle();
+        $this->year = $year;
+        $this->period = $period;
     }
 
-    protected function get_records($client_api, campus $campus): array
+    protected function get_records(campus $campus): array
     {
-        $periodoletivo = sigaa_periodo_letivo::buildFromParameters($this->ano, $this->periodo);
-        $enrollments = $client_api->get_enrollments($campus, $periodoletivo);
-        return $this->get_courses_to_create($campus, $enrollments);
+        mtrace('INFO: Importando disciplinas...');
+        $academic_period = sigaa_periodo_letivo::buildFromParameters($this->year, $this->period);
+        $enrollments = $this->api_client->get_enrollments($campus, $academic_period);
+        return $this->get_all_course_discipline($campus, $enrollments);
     }
 
-    protected function process_records(array $records, $campus): void
+    protected function process_records(campus $campus, array $records): void
     {
         try {
-            foreach ($records as $record){
-                $this->course_moodle->create_course_for_discipline(
-                    $record['disciplina'], $record['enrollment'], $record['category'], $record['course_idnumber']
-                );
+            foreach ($records as $course_discipline){
+               $this->create_course_for_discipline($campus, $course_discipline);
             }
-
         } catch (Exception $e) {
             mtrace(sprintf(
                 'ERROR: Falha ao criar categorias, erro: %s',
                 $e->getMessage()
             ));
+        }
+    }
+
+    private function create_course_for_discipline(campus $campus, course_discipline $course_discipline) {
+        global $CFG;
+        require_once($CFG->dirroot . '/course/lib.php');
+
+        try {
+            $class_group = str_replace(' ', '', $course_discipline->class_group);
+            $period = $this->removerZeroNoPeriodo($course_discipline->period);
+            $fullname = "{$course_discipline->discipline_name} / {$course_discipline->semester_offered}" . $this->get_year_or_semester_suffix($course_discipline->period) . " / {$period}";
+            $shortname = "{$course_discipline->discipline_code} / {$course_discipline->course_id} / {$class_group} / {$course_discipline->semester_offered}" . $this->get_year_or_semester_suffix($course_discipline->period) . " / {$course_discipline->period}";
+
+
+            $course_idnumber = $this->generate_course_idnumber($campus, $course_discipline);
+            if (!$this->course_exists($course_idnumber)) {
+                $category_idnumber = $this->generate_category_level_three_id($campus, $course_discipline);
+                $category = $this->get_category_for_discipline($category_idnumber);
+
+                if ($category) {
+                    $newCourse = (object)[
+                        'fullname' => $fullname,
+                        'shortname' => $shortname,
+                        'category' => $category->id,
+                        'idnumber' => $course_idnumber,
+                        'summary' => $course_discipline->discipline_name,
+                        'summaryformat' => FORMAT_PLAIN,
+                        'format' => 'topics',
+                        'visible' => 1,
+                        'numsections' => 10,
+                        'startdate' => time()
+                    ];
+
+                    $new_course = create_course($newCourse);
+
+                    mtrace(sprintf(
+                        'INFO: Disciplina criada. idnumber: %s, fullname: %s',
+                        $new_course->idnumber,
+                        $new_course->fullname
+                    ));
+                } else {
+                    mtrace("ERROR: Falha ao importar disciplina. Categoria não cadastrada: " . $category_idnumber);
+                }
+            }
+        } catch (Exception $exception) {
+            mtrace('ERROR: Falha ao importar disciplina. erro:' . $exception->getMessage());
         }
 
     }
@@ -76,7 +115,7 @@ class sigaa_courses_sync extends sigaa_base_sync{
                                     mtrace("add " . $course_idnumber );
                                     // $this->courses_created[] = $course_idnumber;
                                 } else {
-                                    mtrace("Categoria não cadastrada: " . $category_idnumber);
+                                    mtrace("ERRO: Categoria não cadastrada: " . $category_idnumber);
                                 }
                             }
                         }
@@ -84,10 +123,109 @@ class sigaa_courses_sync extends sigaa_base_sync{
                 }
             }
         } catch (Exception $exception) {
-            mtrace('ERRO: Falha ao importar disciplina. erro:' . $exception->getMessage());
+            mtrace('ERROR: Falha ao importar disciplina. erro:' . $exception->getMessage());
         }
         return $courses_created;
 
+    }
+
+    private function get_all_course_discipline($campus, $enrollments): ?array {
+        // Inicializando um array para armazenar objetos course_discipline únicos
+        $disciplines = [];
+
+        // Percorrendo os dados dos alunos
+        foreach ($enrollments as $enrollment => $student) {
+            // Percorrendo as disciplinas do aluno
+            foreach ($student["disciplinas"] as $discipline) {
+
+                // Valida a disciplina
+                if ($this->validate($discipline)) {
+                    // Mapeia os dados da disciplina para o objeto course_discipline
+                    $discipline_obj = $this->map_to_course_discipline($student, $discipline);
+
+                    // Filtra pelo idnumber da disciplina
+                    $id = $this->generate_course_idnumber($campus, $discipline_obj);
+                    if (!isset($disciplines[$id])) {
+                        $disciplines[$id] = $discipline_obj;
+                    }
+                } else {
+                    //mtrace('A disciplina contém dados inválidos: ' . json_encode($discipline));
+                }
+            }
+        }
+        mtrace("INFO: Total de disciplinas únicas geradas para processamento: " . count($disciplines));
+        return $disciplines;
+
+    }
+
+    private function validate(array $discipline): bool {
+        // Valida os campos necessários da disciplina
+        return isset($discipline['periodo']) &&
+            isset($discipline['semestre_oferta_disciplina']) &&
+            $discipline['semestre_oferta_disciplina'] !== null &&
+            isset($discipline['turma']) &&
+            $discipline['turma'] !== null;
+    }
+
+    private function get_year_or_semester_suffix($period) {
+        return (substr($period, -1) === '0') ? 'º ano' : 'º semestre';
+    }
+
+    private function map_to_course_discipline($student, $discipline): course_discipline {
+        $course_data = [
+            "course_id" => $student["id_curso"],
+            "course_code" => $student["cod_curso"],
+            "course_name" => $student["curso"],
+            "course_level" => $student["curso_nivel"],
+            "status" => $student["status"]
+        ];
+
+        return new course_discipline(
+            $course_data["course_id"],
+            $course_data["course_code"],
+            $course_data["course_name"],
+            $course_data["course_level"],
+            $course_data["status"],
+            $discipline["disciplina"],
+            $discipline["cod_disciplina"],
+            $discipline["id_disciplina"],
+            $discipline["semestre_oferta_disciplina"],
+            $discipline["periodo"],
+            $discipline["situacao_matricula"],
+            $discipline["turma"],
+            $discipline["modalidade_educacao_turma"],
+            $discipline["turno_turma"]
+        );
+    }
+
+
+    public function get_category_for_discipline($idnumber) {
+        global $DB;
+        return $DB->get_record('course_categories', ['idnumber' => $idnumber]);
+    }
+
+    public function course_exists($idnumber) {
+        global $DB;
+        return $DB->record_exists('course', ['idnumber' => $idnumber]);
+    }
+
+    private function removerZeroNoPeriodo($periodo) {
+        // Verifica se o valor após a barra é 0
+        if (substr($periodo, -2) === '/0') {
+            // Remove a parte "/0" da string
+            return substr($periodo, 0, -2);
+        }
+        // Caso não tenha "/0", retorna o valor original
+        return $periodo;
+    }
+
+    public function generate_course_idnumber(campus $campus, course_discipline $course_discipline) {
+        $class_group = str_replace(' ', '', $course_discipline->class_group);
+        return "{$campus->id_campus}.{$course_discipline->course_id}.{$course_discipline->discipline_id}.{$class_group}.{$course_discipline->period}.{$course_discipline->semester_offered}";
+    }
+
+    private function generate_category_level_three_id(campus $campus, course_discipline $course_discipline) {
+        return "{$campus->id_campus}.{$course_discipline->course_id}.{$course_discipline->period}.{$course_discipline->semester_offered}";
     }
 
 

@@ -29,13 +29,13 @@ class sigaa_categories_sync extends sigaa_base_sync{
 
     protected function get_records(campus $campus): array
     {
-        mtrace('INFO: Importando disciplinas e categorias...');
-        $periodoletivo = sigaa_periodo_letivo::buildFromParameters($this->year, $this->period);
-        $enrollments = $this->api_client->get_enrollments($campus, $periodoletivo);
+        mtrace('INFO: Importando categorias...');
+        $academic_period = sigaa_periodo_letivo::buildFromParameters($this->year, $this->period);
+        $enrollments = $this->api_client->get_enrollments($campus, $academic_period);
         return $this->get_all_course_discipline($campus, $enrollments);
     }
 
-    protected function process_records(array $records, $campus): void
+    protected function process_records(campus $campus, array $records): void
     {
         try {
             // Em cada processamento é verificado, uma vez, a criação da categoria com o nome do campus

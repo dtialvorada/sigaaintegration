@@ -55,7 +55,7 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
         return $client_api->get_enrollments($campus, $periodoletivo);
     }
 
-    protected function process_records(array $records, campus $campus): void
+    protected function process_records(campus $campus, array $records): void
     {
         try {
             $this->enroll_student_into_courses($campus, $records);

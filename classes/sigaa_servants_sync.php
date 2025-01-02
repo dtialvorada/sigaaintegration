@@ -39,7 +39,7 @@ class sigaa_servants_sync extends sigaa_base_sync
         return $novos;
     }
 
-    protected function process_records(array $records, $campus): void
+    protected function process_records(campus $campus, array $records): void
     {
         mtrace("Processando dados: ". $campus->description);
         foreach ($records as $key => $record) {

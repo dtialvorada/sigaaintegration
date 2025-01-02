@@ -17,8 +17,7 @@ abstract class sigaa_base_sync
         $this->api_client = sigaa_api_client::create();
     }
     abstract protected function get_records(campus $campus): array;
-    abstract protected function process_records(array $records, campus $campus): void;
-
+    abstract protected function process_records(campus $campus, array $records): void;
 
     public function sync(): void
     {
@@ -39,7 +38,7 @@ abstract class sigaa_base_sync
 
                         $transaction = $DB->start_delegated_transaction();
                         try {
-                            $this->process_records($batch, $campus);
+                            $this->process_records($campus, $batch);
                             $transaction->allow_commit();
                         } catch (Exception $e) {
                             $transaction->rollback($e);

@@ -29,7 +29,7 @@ class sigaa_students_sync extends sigaa_base_sync
         return $client_api->get_enrollments($campus, $periodoletivo);
     }
 
-    protected function process_records(array $records, $campus): void
+    protected function process_records(campus $campus, array $records): void
     {
         mtrace("Processando dados: ". $campus->description);
         foreach ($records as $key => $record) {

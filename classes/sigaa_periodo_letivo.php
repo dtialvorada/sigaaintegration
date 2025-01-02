@@ -60,8 +60,10 @@ class sigaa_periodo_letivo
     private static function getPeriodoLetivoAtual(): array
     {
         return [
-            'ano' => date("Y"),
-            'periodo' => intval(date("m")) <= 6 ? 1 : 2,
+            //'ano' => date("Y"),
+            //'periodo' => intval(date("m")) <= 6 ? 1 : 2,
+            'ano' => 2024,
+            'periodo' => 2,
         ];
     }
 
