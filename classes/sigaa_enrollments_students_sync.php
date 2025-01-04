@@ -70,6 +70,59 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
     }
 
     /**
+     * Tenta inscrever o estudante nas disciplinas retornadas pela API do SIGAA.
+     */
+    private function enroll_student_into_courses($campus, array $enrollments): void
+    {
+        foreach ($enrollments as $enrollment) {
+            $user = $this->search_student($enrollment['login']);
+            mtrace($enrollment['login']);
+            if (!$user) {
+                mtrace(sprintf('ERRO: Usuário não encontrado. usuário: %s', $enrollment['login']));
+                return;
+            }
+
+            foreach ($enrollment['disciplinas'] as $course_enrollment) {
+                try {
+                    if($this->validate($course_enrollment)) {
+                        // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
+                        $course_discipline = $this->course_discipline_mapper->map_to_course_discipline($enrollment, $course_enrollment);
+                        $courseidnumber = $course_discipline->generate_course_idnumber($campus);
+                        $this->enroll_student_into_single_course($user, $courseidnumber);
+                    }
+                } catch (Exception $e) {
+                    mtrace(sprintf(
+                        'ERRO: Falha ao processar inscrição de estudante em uma disciplina. ' .
+                        'matrícula: %s, usuário: %s, disciplina: %s, erro: %s',
+                        $enrollment['matricula'],
+                        $user->username,
+                        $courseidnumber,
+                        $e->getMessage()
+                    ));
+                }
+            }
+        }
+    }
+
+    /**
+     * Busca estudante pelo login/CPF.
+     */
+    private function search_student(string $login): object|false
+    {
+        global $DB;
+        return $DB->get_record('user', ['username' => $login]);
+    }
+
+    private function validate(array $discipline): bool {
+        // Valida os campos necessários da disciplina
+        return isset($discipline['periodo']) &&
+            isset($discipline['semestre_oferta_disciplina']) &&
+            $discipline['semestre_oferta_disciplina'] !== null &&
+            isset($discipline['turma']) &&
+            $discipline['turma'] !== null;
+    }
+
+    /**
      * Busca disciplina pelo código de integração.
      */
     private function search_course(string $courseidnumber): ?object
@@ -88,15 +141,6 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
 
         $this->courseNotFound[] = $courseidnumber;
         return null;
-    }
-
-    /**
-     * Busca estudante pelo login/CPF.
-     */
-    private function search_student(string $login): object|false
-    {
-        global $DB;
-        return $DB->get_record('user', ['username' => $login]);
     }
 
     /**
@@ -141,41 +185,6 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
     }
 
     /**
-     * Tenta inscrever o estudante nas disciplinas retornadas pela API do SIGAA.
-     */
-    private function enroll_student_into_courses($campus, array $enrollments): void
-    {
-        foreach ($enrollments as $enrollment) {
-            $user = $this->search_student($enrollment['login']);
-            mtrace($enrollment['login']);
-            if (!$user) {
-                mtrace(sprintf('ERRO: Usuário não encontrado. usuário: %s', $enrollment['login']));
-                return;
-            }
-
-            foreach ($enrollment['disciplinas'] as $course_enrollment) {
-                try {
-                    if($this->validate($course_enrollment)) {
-                        // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
-                        $course_discipline = $this->course_discipline_mapper->map_to_course_discipline($enrollment, $course_enrollment);
-                        $courseidnumber = $course_discipline->generate_course_idnumber($campus);
-                        $this->enroll_student_into_single_course($user, $courseidnumber);
-                    }
-                } catch (Exception $e) {
-                    mtrace(sprintf(
-                        'ERRO: Falha ao processar inscrição de estudante em uma disciplina. ' .
-                        'matrícula: %s, usuário: %s, disciplina: %s, erro: %s',
-                        $enrollment['matricula'],
-                        $user->username,
-                        $courseidnumber,
-                        $e->getMessage()
-                    ));
-                }
-            }
-        }
-    }
-
-    /**
      * Tenta increver o estudante em uma determinada disciplina retornada pela API do SIGAA.
      */
     private function enroll_student_into_single_course(object $user, string $courseidnumber) :void
@@ -192,15 +201,5 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
 
         $this->enroll_student($course, $user);
     }
-
-    private function validate(array $discipline): bool {
-        // Valida os campos necessários da disciplina
-        return isset($discipline['periodo']) &&
-            isset($discipline['semestre_oferta_disciplina']) &&
-            $discipline['semestre_oferta_disciplina'] !== null &&
-            isset($discipline['turma']) &&
-            $discipline['turma'] !== null;
-    }
-
 
 }
