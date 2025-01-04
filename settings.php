@@ -20,7 +20,7 @@
  * @package   local_sigaaintegration
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-use local_sigaaintegration\admin_setting_current_term;
+use local_sigaaintegration\admin_setting_academic_period;
 
 
 $settings = new admin_settingpage(
@@ -126,63 +126,21 @@ if ($ADMIN->fulltree) {
         }
     }
 
-
-    $settings->add(new admin_setting_heading(
-        'userfields_settings',
-        new lang_string('userfields_settings', 'local_sigaaintegration'),
-        new lang_string('userfields_settings_information', 'local_sigaaintegration')
-    ));
-
-    $cpffieldname = new admin_setting_configtext(
-        'local_sigaaintegration/cpffieldname',
-        new lang_string('cpffieldname', 'local_sigaaintegration'),
-        new lang_string('cpffieldname_information', 'local_sigaaintegration'),
-        'cpf_sigaa',
-        PARAM_ALPHANUMEXT
-    );
-    $settings->add($cpffieldname);
-
-    $settings->add(new admin_setting_heading(
-        'coursefields_settings',
-        new lang_string('coursefields_settings', 'local_sigaaintegration'),
-        new lang_string('coursefields_settings_information', 'local_sigaaintegration')
-    ));
-
-    $periodfieldname = new admin_setting_configtext(
-        'local_sigaaintegration/periodfieldname',
-        new lang_string('periodfieldname', 'local_sigaaintegration'),
-        new lang_string('periodfieldname_information', 'local_sigaaintegration'),
-        'periodo_letivo',
-        PARAM_ALPHANUMEXT
-    );
-    $settings->add($periodfieldname);
-
-    $metadatafieldname = new admin_setting_configtext(
-        'local_sigaaintegration/metadatafieldname',
-        new lang_string('metadatafieldname', 'local_sigaaintegration'),
-        new lang_string('metadatafieldname_information', 'local_sigaaintegration'),
-        'metadata',
-        PARAM_ALPHANUMEXT
-    );
-    $settings->add($metadatafieldname);
-
-
-
     $settings->add(new admin_setting_heading(
         'othersettings',
         new lang_string('othersettings', 'local_sigaaintegration'),
         ''
     ));
 
-    $current_term = new admin_setting_current_term(
-        'local_sigaaintegration/current_term',
-        new lang_string('current_term', 'local_sigaaintegration'),
-        new lang_string('current_term_information', 'local_sigaaintegration'),
+    $academic_period = new admin_setting_academic_period(
+        'local_sigaaintegration/academic_period',
+        new lang_string('academic_period', 'local_sigaaintegration'),
+        new lang_string('academic_period_information', 'local_sigaaintegration'),
         '', // Valor padrão.
         PARAM_TEXT
     );
 
-    $settings->add($current_term);
+    $settings->add($academic_period);
 
     $basecategory = new admin_settings_coursecat_select(
         'local_sigaaintegration/basecategory',
@@ -190,14 +148,6 @@ if ($ADMIN->fulltree) {
         new lang_string('basecategory_information', 'local_sigaaintegration')
     );
     $settings->add($basecategory);
-
-    $archivecategoryname = new admin_setting_configtext(
-        'local_sigaaintegration/archivecategoryname',
-        new lang_string('archivecategoryname', 'local_sigaaintegration'),
-        new lang_string('archivecategoryname_information', 'local_sigaaintegration'),
-        'Disciplinas antigas'
-    );
-    $settings->add($archivecategoryname);
 
     if (!during_initial_install()) {
         $options = get_default_enrol_roles(context_system::instance());

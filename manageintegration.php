@@ -58,11 +58,6 @@ if ($data = $form->get_data()) {
         $task = new import_courses_adhoc_task();
     }
 
-    if (isset($data->archivecourses)) {
-        $message = "Arquivamento de disciplinas adicionado na fila para processamento.";
-        $task = new archive_courses_adhoc_task();
-    }
-
     if (!empty($task)) {
         if (isset($data->enrollments) || isset($data->courses)) {
             setTaskData($task, $data->period);

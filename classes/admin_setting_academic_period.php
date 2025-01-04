@@ -1,7 +1,8 @@
 <?php
 namespace local_sigaaintegration;
 
-class admin_setting_current_term extends \admin_setting_configtext {
+class admin_setting_academic_period extends \admin_setting_configtext {
+
     /**
      * Valida o formato do valor (YYYY/N).
      *

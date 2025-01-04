@@ -75,9 +75,9 @@ $string['id_campus'] = 'id_campus';
 $string['id_campus_information'] = 'id_campus - SIGAA';
 $string['scheduled_sync_information'] = 'Scheduled sync information';
 $string['scheduled_sync'] = 'Scheduled sync';
-$string['current_term'] = 'Current term';
-$string['current_term_information'] = 'Current term information';
-$string['error_current_term_format'] = 'The current term format "{$a}" is incorrect. Please use the format YYYY/N (where YYYY is the year and N is the semester number, 1 or 2). For more information, please refer to the documentation.';
+$string['academic_period'] = 'Academic period';
+$string['academic_period_information'] = 'academic_period information';
+$string['error_current_term_format'] = 'The academic period format "{$a}" is incorrect. Please use the format YYYY/N (where YYYY is the year and N is the semester number, 1 or 2). For more information, please refer to the documentation.';
 
 $string['presencial'] = 'Presencial';
 $string['a_distancia'] = 'A Distância';

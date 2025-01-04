@@ -28,7 +28,7 @@ use core\context;
 use core_course_category;
 use Exception;
 
-class sigaa_enrollments_sync
+class sigaa_enrollments_syncOld
 {
 
     private string $ano;
