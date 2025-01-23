@@ -80,4 +80,8 @@ class configuration {
         return get_config('local_sigaaintegration', 'basecategory');
     }
 
+    public static function getAcademicPeriod(): string {
+        return get_config('local_sigaaintegration', 'academic_period');
+    }
+
 }

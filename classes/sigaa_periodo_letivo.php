@@ -42,7 +42,8 @@ class sigaa_periodo_letivo
 
     public static function buildNew(): sigaa_periodo_letivo
     {
-        $periodoletivo = self::getPeriodoLetivoAtual();
+        //$periodoletivo = self::getPeriodoLetivoAtual();
+        $periodoletivo = self::getPeriodoLetivoSettings();
         return new sigaa_periodo_letivo($periodoletivo['ano'], $periodoletivo['periodo']);
     }
 
@@ -64,6 +65,17 @@ class sigaa_periodo_letivo
             //'periodo' => intval(date("m")) <= 6 ? 1 : 2,
             'ano' => 2024,
             'periodo' => 2,
+        ];
+    }
+
+    // get field academic_period da pagina settings.php,
+    private static function getPeriodoLetivoSettings(): array
+    {
+        $academicPeriod = configuration::getAcademicPeriod();//get from Other Settings -> Academic Period -> page settings.php 
+        $result = preg_split("/\//", trim($academicPeriod), -1, PREG_SPLIT_NO_EMPTY);
+        return [
+            'ano' => $result[0],
+            'periodo' => $result[1],
         ];
     }
 
