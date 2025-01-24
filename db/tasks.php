@@ -123,5 +123,25 @@ $tasks = [
 
         // At a random minute
         'minute' => 'R',
+    ],
+    [
+        'classname' => 'local_sigaaintegration\task\import_enrollments_servants_task',
+
+        'blocking' => 0,
+
+        // Every month.
+        'month' => '*',
+
+        // Every day.
+        'day' => '*',
+
+        // Every day of week.
+        'dayofweek' => '*',
+
+        // At 4am
+        'hour' => '4',
+
+        // At a random minute
+        'minute' => 'R',
     ]
 ];
