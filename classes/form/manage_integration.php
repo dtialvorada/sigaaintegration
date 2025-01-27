@@ -40,6 +40,10 @@ class manage_integration extends \moodleform
         $this->_form->setType('period', PARAM_RAW);
         $this->_form->addHelpButton('period', 'period', 'local_sigaaintegration');
 
+        $this->_form->addElement('header', 'importcategoriesheader', get_string('importcategories', 'local_sigaaintegration'));
+        $this->_form->addElement('submit', 'categories', get_string('import', 'local_sigaaintegration'));
+        $this->_form->setExpanded('importcategoriesheader');
+
         $this->_form->addElement('header', 'importcoursesheader', get_string('importcourses', 'local_sigaaintegration'));
         $this->_form->addElement('submit', 'courses', get_string('import', 'local_sigaaintegration'));
         $this->_form->setExpanded('importcoursesheader');

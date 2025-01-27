@@ -22,6 +22,7 @@
 use local_sigaaintegration\form\manage_integration;
 use local_sigaaintegration\sigaa_periodo_letivo;
 use local_sigaaintegration\task\archive_courses_adhoc_task;
+use local_sigaaintegration\task\import_categories_adhoc_task;
 use local_sigaaintegration\task\import_courses_adhoc_task;
 use local_sigaaintegration\task\import_enrollments_adhoc_task;
 
@@ -47,6 +48,11 @@ $form->set_data([
 ]);
 
 if ($data = $form->get_data()) {
+
+    if (isset($data->categories)) {
+        $message = "Importação de categorias adicionada na fila para processamento.";
+        $task = new import_categories_adhoc_task();
+    }
 
     if (isset($data->enrollments)) {
         $message = "Importação de matrículas adicionada na fila para processamento.";
