@@ -30,7 +30,7 @@ class sigaa_categories_sync extends sigaa_base_sync{
     protected function get_records(campus $campus): array
     {
         mtrace('INFO: Importando categorias...');
-        $academic_period = sigaa_periodo_letivo::buildFromParameters($this->year, $this->period);
+        $academic_period = sigaa_academic_period::buildFromParameters($this->year, $this->period);
         $enrollments = $this->api_client->get_enrollments($campus, $academic_period);
         return $this->get_all_course_discipline($campus, $enrollments);
     }

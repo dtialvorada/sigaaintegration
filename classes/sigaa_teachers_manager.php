@@ -3,7 +3,7 @@ namespace local_sigaaintegration;
 
 use moodle_exception;
 
-class sigaa_servants_manager {
+class sigaa_teachers_manager {
 
     // Variável para armazenar os servidores do SIGAA
     private array $servants_sigaa = [];  // Inicializando o array corretamente

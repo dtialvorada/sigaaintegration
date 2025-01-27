@@ -25,10 +25,10 @@
 namespace local_sigaaintegration\task;
 
 use core\task\scheduled_task;
-use local_sigaaintegration\sigaa_enrollments_servants_sync;
-use local_sigaaintegration\sigaa_periodo_letivo;
+use local_sigaaintegration\sigaa_enrollments_students_sync;
+use local_sigaaintegration\sigaa_academic_period;
 
-class import_enrollments_servants_task extends scheduled_task {
+class import_enrollments_students_task extends scheduled_task {
 
     /**
      * Get a descriptive name for this task (shown to admins).
@@ -36,12 +36,12 @@ class import_enrollments_servants_task extends scheduled_task {
      * @return string
      */
     public function get_name() {
-        return get_string('importservantenrollments', 'local_sigaaintegration');
+        return get_string('importenrollments', 'local_sigaaintegration');
     }
 
     public function execute() {
-        $period = sigaa_periodo_letivo::buildNew();
-        $enrollmentssync = new sigaa_enrollments_servants_sync($period->getAno(), $period->getPeriodo());
+        $period = sigaa_academic_period::getAcademicPeriod();
+        $enrollmentssync = new sigaa_enrollments_students_sync($period->getAno(), $period->getPeriodo());
         $enrollmentssync->sync();
     }
 

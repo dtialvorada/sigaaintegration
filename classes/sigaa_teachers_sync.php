@@ -9,11 +9,11 @@
 
 namespace local_sigaaintegration;
 
-class sigaa_servants_sync extends sigaa_base_sync
+class sigaa_teachers_sync extends sigaa_base_sync
 {
     private user_moodle $user_moodle;
 
-    private sigaa_servants_manager $sigaa_servants;
+    private sigaa_teachers_manager $sigaa_servants;
 
     public function __construct(string $year, string $period)
     {
@@ -21,14 +21,14 @@ class sigaa_servants_sync extends sigaa_base_sync
         $this->ano = $year;
         $this->periodo = $period;
         $this->user_moodle = new user_moodle();
-        $this->sigaa_servants = new sigaa_servants_manager($this->api_client);
+        $this->sigaa_servants = new sigaa_teachers_manager($this->api_client);
 
     }
 
     protected function get_records(campus $campus): array
     {
         try {
-            $periodoletivo = sigaa_periodo_letivo::buildFromParameters($this->ano, $this->periodo);
+            $periodoletivo = sigaa_academic_period::buildFromParameters($this->ano, $this->periodo);
             $enrollments =  $this->api_client->get_enrollments($campus, $periodoletivo);
             $docentes = $this->get_records_docentes($enrollments);
             $novos = $this->teachres_to_register($docentes);

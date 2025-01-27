@@ -21,7 +21,7 @@ class import_categories_adhoc_task extends adhoc_task {
     }
 
     public function execute() {
-        $period = sigaa_periodo_letivo::buildNew();
+        $period = sigaa_periodo_letivo::getAcademicPeriod();
         $categoriessync = new sigaa_categories_sync($period->getAno(), $period->getPeriodo());
         $categoriessync->sync();
     }

@@ -25,7 +25,7 @@ class sigaa_students_sync extends sigaa_base_sync
 
     protected function get_records($campus): array
     {
-        $periodoletivo = sigaa_periodo_letivo::buildFromParameters($this->ano, $this->periodo);
+        $periodoletivo = sigaa_academic_period::buildFromParameters($this->ano, $this->periodo);
         return $this->api_client->get_enrollments($campus, $periodoletivo);
     }
 

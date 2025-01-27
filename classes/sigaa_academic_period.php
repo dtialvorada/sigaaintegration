@@ -25,7 +25,7 @@
 
 namespace local_sigaaintegration;
 
-class sigaa_periodo_letivo
+class sigaa_academic_period
 {
 
     private string $ano;
@@ -40,36 +40,39 @@ class sigaa_periodo_letivo
         $this->periodo = $periodo;
     }
 
-    public static function buildNew(): sigaa_periodo_letivo
+    public static function getAcademicPeriod(): sigaa_academic_period
     {
-        //$periodoletivo = self::getPeriodoLetivoAtual();
-        $periodoletivo = self::getPeriodoLetivoSettings();
-        return new sigaa_periodo_letivo($periodoletivo['ano'], $periodoletivo['periodo']);
+        $periodoletivo = self::getAcademicPeriodFromSettings();
+        return new sigaa_academic_period($periodoletivo['ano'], $periodoletivo['periodo']);
     }
 
-    public static function buildFromParameters(string $ano, string $periodo): sigaa_periodo_letivo
+    public static function getCurrentAcademicPeriod(): sigaa_academic_period
     {
-        return new sigaa_periodo_letivo($ano, $periodo);
+        $periodoletivo = self::getCurrAcademicPeriod();
+        return new sigaa_academic_period($periodoletivo['ano'], $periodoletivo['periodo']);
     }
 
-    public static function buildFromPeriodoFormatado(string $periodoletivo): sigaa_periodo_letivo
+    public static function buildFromParameters(string $ano, string $periodo): sigaa_academic_period
+    {
+        return new sigaa_academic_period($ano, $periodo);
+    }
+
+    public static function buildFromPeriodoFormatado(string $periodoletivo): sigaa_academic_period
     {
         $parts = explode(self::SEPARADOR, $periodoletivo);
-        return new sigaa_periodo_letivo($parts[0], $parts[1]);
+        return new sigaa_academic_period($parts[0], $parts[1]);
     }
 
-    private static function getPeriodoLetivoAtual(): array
+    private static function getCurrAcademicPeriod(): array
     {
         return [
-            //'ano' => date("Y"),
-            //'periodo' => intval(date("m")) <= 6 ? 1 : 2,
-            'ano' => 2024,
-            'periodo' => 2,
+            'ano' => date("Y"),
+            'periodo' => intval(date("m")) <= 6 ? 1 : 2,
         ];
     }
 
     // get field academic_period da pagina settings.php,
-    private static function getPeriodoLetivoSettings(): array
+    private static function getAcademicPeriodFromSettings(): array
     {
         $academicPeriod = configuration::getAcademicPeriod();//get from Other Settings -> Academic Period -> page settings.php 
         $result = preg_split("/\//", trim($academicPeriod), -1, PREG_SPLIT_NO_EMPTY);

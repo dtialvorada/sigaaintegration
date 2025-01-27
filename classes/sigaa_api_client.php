@@ -59,7 +59,7 @@ class sigaa_api_client  {
         return new sigaa_api_client($apibaseurl, $apiclientid, $apiclientsecret);
     }
 
-    public function get_enrollments(campus $campus, sigaa_periodo_letivo $periodoletivo) : array {
+    public function get_enrollments(campus $campus, sigaa_academic_period $periodoletivo) : array {
         $response = $this->get_http_client()->get($this->apibaseurl . self::ENROLLMENTS_URL, [
             'headers' => [
                 'Content-Type' => 'application/json',

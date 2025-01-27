@@ -2,10 +2,10 @@
 namespace local_sigaaintegration\task;
 
 use core\task\scheduled_task;
-use local_sigaaintegration\sigaa_periodo_letivo;
-use local_sigaaintegration\sigaa_servants_sync;
+use local_sigaaintegration\sigaa_academic_period;
+use local_sigaaintegration\sigaa_teachers_sync;
 
-class import_servants_task extends scheduled_task {
+class import_teachers_task extends scheduled_task {
 
     /**
     * Get a descriptive name for this task (shown to admins).
@@ -17,8 +17,8 @@ class import_servants_task extends scheduled_task {
     }
 
     public function execute() {
-        $period = sigaa_periodo_letivo::buildNew();
-        $servantssync = new sigaa_servants_sync($period->getAno(), $period->getPeriodo());
+        $period = sigaa_academic_period::getAcademicPeriod();
+        $servantssync = new sigaa_teachers_sync($period->getAno(), $period->getPeriodo());
         $servantssync->sync();
     }
 

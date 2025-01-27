@@ -57,7 +57,7 @@ class sigaa_enrollments_syncOld
     {
         // Consulta as matrículas
         $clientapi = sigaa_api_client::create();
-        $periodoletivo = sigaa_periodo_letivo::buildFromParameters($this->ano, $this->periodo);
+        $periodoletivo = sigaa_academic_period::buildFromParameters($this->ano, $this->periodo);
 
         if($this->clientlist) {
             foreach ($this->clientlist as $campus) {
