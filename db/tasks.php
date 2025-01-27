@@ -65,7 +65,7 @@ $tasks = [
         'minute' => 'R',
     ],
     [
-        'classname' => 'local_sigaaintegration\task\import_enrollments_task',
+        'classname' => 'local_sigaaintegration\task\import_enrollments_students_task',
 
         'blocking' => 0,
 
@@ -105,7 +105,7 @@ $tasks = [
         'minute' => 'R',
     ],
     [
-        'classname' => 'local_sigaaintegration\task\import_servants_task',
+        'classname' => 'local_sigaaintegration\task\import_teachers_task',
 
         'blocking' => 0,
 
@@ -125,7 +125,7 @@ $tasks = [
         'minute' => 'R',
     ],
     [
-        'classname' => 'local_sigaaintegration\task\import_enrollments_servants_task',
+        'classname' => 'local_sigaaintegration\task\import_enrollments_teachers_task',
 
         'blocking' => 0,
 
