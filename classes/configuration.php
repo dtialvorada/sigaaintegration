@@ -46,9 +46,10 @@ class configuration {
                 $id_campus = get_config('local_sigaaintegration', "id_campus_{$client}");
                 $scheduled_sync = get_config('local_sigaaintegration', "scheduled_sync_{$client}");
                 $modalidade_educacao = get_config('local_sigaaintegration', "modalidade_educacao_{$client}");
+                $coursevisibility = get_config('local_sigaaintegration', "coursevisibility_{$client}");
 
                 if ($id_campus !== null && $scheduled_sync !== null && $modalidade_educacao !== null) {
-                    $new_client = new campus($id_campus, $client, $scheduled_sync, $modalidade_educacao);
+                    $new_client = new campus($id_campus, $client, $scheduled_sync, $modalidade_educacao, $coursevisibility);
                     $client_configs[] = $new_client;
                 }
             }

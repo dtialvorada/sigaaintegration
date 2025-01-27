@@ -123,6 +123,17 @@ if ($ADMIN->fulltree) {
                 ]
             ));
 
+            $settings->add(new admin_setting_configselect(
+                "local_sigaaintegration/coursevisibility_{$client}",
+                new lang_string('coursevisibility', 'local_sigaaintegration'),
+                new lang_string('coursevisibility_desc', 'local_sigaaintegration'),
+                1, // Valor padrão: curso visível
+                [
+                    1 => new lang_string('visible', 'local_sigaaintegration'),
+                    0 => new lang_string('hidden', 'local_sigaaintegration')
+                ]
+            ));
+
         }
     }
 

@@ -60,11 +60,11 @@ class sigaa_courses_manager {
     public function get_courses_by_id_course(campus $campus, $id_curso): ?array {
         // Filtra o array de cursos para encontrar o campus com o ID fornecido
         $all_courses = $this->get_all_courses_by_campus($campus);
-        foreach ($all_courses as $courses) {
-            if ($courses['id_campus'] == $campus->id_campus) {
-                if ($courses['id_curso'] == $id_curso) {
+        foreach ($all_courses as $course) {
+            if ($course['id_campus'] == $campus->id_campus) {
+                if ($course['id_curso'] == $id_curso) {
                     // Retorna os dados do curso correspondente
-                    return $courses;
+                    return $course;
                 }
 
             }

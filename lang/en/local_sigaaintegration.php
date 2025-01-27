@@ -88,6 +88,9 @@ $string['remoto'] = 'Remoto';
 $string['modalidade_educacao'] = 'Modalidade Educação';
 $string['modalidade_educacao_information'] = 'Modalidade Educação';
 
-
+$string['coursevisibility'] = 'Course visibility';
+$string['coursevisibility_desc'] = 'Set whether courses should be visible or hidden by default when created.';
+$string['visible'] = 'Visible';
+$string['hidden'] = 'Hidden';
 
 

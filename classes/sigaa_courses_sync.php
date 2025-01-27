@@ -69,7 +69,7 @@ class sigaa_courses_sync extends sigaa_base_sync{
                         'summary' => $course_discipline->discipline_name,
                         'summaryformat' => FORMAT_PLAIN,
                         'format' => 'topics',
-                        'visible' => 1,
+                        'visible' => $campus->coursevisibility,
                         'numsections' => 10,
                         'startdate' => time()
                     ];

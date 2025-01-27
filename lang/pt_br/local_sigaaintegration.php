@@ -109,3 +109,8 @@ $string['remoto'] = 'Remoto';
 
 $string['modalidade_educacao'] = 'Modalidade Educação';
 $string['modalidade_educacao_information'] = 'Modalidade Educação';
+
+$string['coursevisibility'] = 'Visibilidade do curso';
+$string['coursevisibility_desc'] = 'Defina se os cursos devem ser visíveis ou ocultos por padrão ao serem criados.';
+$string['visible'] = 'Visível';
+$string['hidden'] = 'Oculto';

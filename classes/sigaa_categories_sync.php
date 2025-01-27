@@ -45,30 +45,37 @@ class sigaa_categories_sync extends sigaa_base_sync{
             }
 
             foreach ($records as $course_discipline) {
-                // Adiciona o índice no array de controle,
-                // Adiciona true para operar junto com a função isset
 
-                // Criação do nível 1 (curso)
-                $idnumber_level_one = $this->generate_category_level_two_id($campus, $course_discipline);
-                if (!isset($this->category_level_one_created[$idnumber_level_one])) {
-                    $this->create_category_level_one($campus, $course_discipline);
-                    $this->category_level_one_created[$idnumber_level_one] = true;
+                $course = $this->sigaa_courses_manager->get_courses_by_id_course($campus, $course_discipline->course_id);
+
+                if(isset($course['modalidade_educacao'])) {
+                    if ($course['modalidade_educacao'] == $campus::MODALIDADES[$campus->modalidade_educacao]) {
+                        // Adiciona o índice no array de controle,
+                        // Adiciona true para operar junto com a função isset
+
+                        // Criação do nível 1 (curso)
+                        $idnumber_level_one = $this->generate_category_level_two_id($campus, $course_discipline);
+                        if (!isset($this->category_level_one_created[$idnumber_level_one])) {
+                            $this->create_category_level_one($campus, $course_discipline);
+                            $this->category_level_one_created[$idnumber_level_one] = true;
+                        }
+
+                        // Criação do nível 2 (período)
+                        $idnumber_level_two = $this->generate_category_level_two_id($campus, $course_discipline);
+                        if (!isset($this->category_level_two_created[$idnumber_level_two])) {
+                            $this->create_category_level_two($campus, $course_discipline);
+                            $this->category_level_two_created[$idnumber_level_two] = true;
+                        }
+
+                        // Criação do nível 3 (semestre ou ano)
+                        $idnumber_level_three = $this->generate_category_level_three_id($campus, $course_discipline);
+                        if (!isset($this->category_level_three_created[$idnumber_level_three])) {
+                            $this->create_category_level_three($campus, $course_discipline);
+                            $this->category_level_three_created[$idnumber_level_three] = true;
+                        }
+
+                    }
                 }
-
-                // Criação do nível 2 (período)
-                $idnumber_level_two = $this->generate_category_level_two_id($campus, $course_discipline);
-                if (!isset($this->category_level_two_created[$idnumber_level_two])) {
-                    $this->create_category_level_two($campus, $course_discipline);
-                    $this->category_level_two_created[$idnumber_level_two] = true;
-                }
-
-                // Criação do nível 3 (semestre ou ano)
-                $idnumber_level_three = $this->generate_category_level_three_id($campus, $course_discipline);
-                if (!isset($this->category_level_three_created[$idnumber_level_three])) {
-                    $this->create_category_level_three($campus, $course_discipline);
-                    $this->category_level_three_created[$idnumber_level_three] = true;
-                }
-
             }
         } catch (Exception $e) {
             mtrace(sprintf('ERROR: Falha ao processar registros, erro: %s', $e->getMessage()));
