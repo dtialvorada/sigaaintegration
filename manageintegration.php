@@ -20,7 +20,7 @@
  */
 
 use local_sigaaintegration\form\manage_integration;
-use local_sigaaintegration\sigaa_periodo_letivo;
+use local_sigaaintegration\sigaa_academic_period;
 use local_sigaaintegration\task\archive_courses_adhoc_task;
 use local_sigaaintegration\task\import_categories_adhoc_task;
 use local_sigaaintegration\task\import_courses_adhoc_task;
@@ -30,7 +30,7 @@ require_once('../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 
 function setTaskData($task, $periodo) {
-    $periodoletivo = sigaa_periodo_letivo::buildFromPeriodoFormatado($periodo);
+    $periodoletivo = sigaa_academic_period::buildFromPeriodoFormatado($periodo);
 
     $task->set_custom_data((object) [
         'ano' => $periodoletivo->getAno(),
@@ -44,7 +44,7 @@ admin_externalpage_setup('local_sigaaintegration_manageintegration');
 
 $form = new manage_integration();
 $form->set_data([
-    'period' => sigaa_periodo_letivo::buildNew()->getPeriodoFormatado(),
+    'period' => sigaa_academic_period::getAcademicPeriod()->getPeriodoFormatado(),
 ]);
 
 if ($data = $form->get_data()) {
