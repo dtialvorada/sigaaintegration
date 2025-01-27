@@ -40,6 +40,8 @@ class sigaa_enrollments_servants_sync extends sigaa_base_sync {
 
     private $course_discipline_mapper;
 
+    private array $teachersNotFound = [];
+
     public function __construct(string $year, string $period)
     {
         parent::__construct();
@@ -86,12 +88,18 @@ class sigaa_enrollments_servants_sync extends sigaa_base_sync {
                             $cpf_docente_str = strval($teacher['cpf_docente']);
                             // Garantir que o CPF tenha 11 dígitos, completando com zeros à esquerda, se necessário
                             $cpf_docente_str = str_pad($cpf_docente_str, 11, "0", STR_PAD_LEFT);
-                            $user = $this->search_teacher($cpf_docente_str);
-                            //mtrace($cpf_docente_str);
-                            if (!$user) {
-                                mtrace(sprintf('ERRO: Usuário não encontrado. usuário: %s', $cpf_docente_str));
+                            if (in_array($cpf_docente_str, $this->teachersNotFound)) {
+                                mtrace(sprintf('INFO: Usuário previamente registrado como não encontrado. usuário: %s', $cpf_docente_str));
+                                continue;
                             }
-                            else {
+
+                            // Buscar o usuário no banco
+                            $user = $this->search_teacher($cpf_docente_str);
+                            if (!$user) {
+                                // Adicionar o CPF ao array de usuários não encontrados
+                                $this->teachersNotFound[] = $cpf_docente_str;
+                                mtrace(sprintf('ERRO: Usuário não encontrado. usuário: %s', $cpf_docente_str));
+                            } else {
                                 $this->enroll_teacher_into_single_course($user, $courseidnumber);
                             }
                         }
