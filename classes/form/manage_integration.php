@@ -60,6 +60,10 @@ class manage_integration extends \moodleform
 
         $this->_form->addElement('submit', 'archivecourses', get_string('archive', 'local_sigaaintegration'));
         $this->_form->setExpanded('archivecoursesheader');
+
+        $this->_form->addElement('header', 'deleteallusersheader', get_string('deleteallusers', 'local_sigaaintegration'));
+        $this->_form->addElement('submit', 'deleteusers', get_string('delete', 'local_sigaaintegration'));
+        $this->_form->setExpanded('deleteallusersheader');
     }
 
     public function validation($data, $files)
