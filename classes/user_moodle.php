@@ -20,7 +20,8 @@ class user_moodle
             $user->username = $record['login'];
             $user->firstname = $this->get_first_name($record['nome_completo']);
             $user->lastname = $this->get_last_name($record['nome_completo']);
-            $user->email = $this->generate_email($record);
+            //$user->email = $this->generate_email($record);
+            $user->email = $record['email'];
             $user->password = hash_internal_user_password($this->generate_strong_password());
             $user->auth = 'manual';
             $user->confirmed = 1;
