@@ -26,6 +26,7 @@ use local_sigaaintegration\task\import_categories_adhoc_task;
 use local_sigaaintegration\task\import_courses_adhoc_task;
 use local_sigaaintegration\task\import_enrollments_adhoc_task;
 use local_sigaaintegration\task\delete_users_adhoc_task;
+use local_sigaaintegration\task\delete_categories_adhoc_task;
 
 require_once('../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
@@ -68,6 +69,11 @@ if ($data = $form->get_data()) {
     if (isset($data->deleteusers)) {
         $message = "Exclusão de usuários adicionado na fila para processamento";
         $task = new delete_users_adhoc_task();
+    }
+
+    if (isset($data->deletecategories)) {
+        $message = "Exclusão de categorias adicionada na fila para processamento";
+        $task = new delete_categories_adhoc_task();
     }
 
     if (!empty($task)) {

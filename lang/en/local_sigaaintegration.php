@@ -61,6 +61,7 @@ $string['importservants'] = 'Import teachers';
 $string['importcourses'] = 'Import courses';
 $string['importcategories'] = 'Import categories';
 $string['deleteallusers'] = 'Delete all users';
+$string['deleteallcategories'] = 'Delete all categories';
 $string['archivecourses'] = 'Archive courses';
 $string['import'] = 'Import';
 $string['archive'] = 'Archive';

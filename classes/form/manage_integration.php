@@ -64,6 +64,10 @@ class manage_integration extends \moodleform
         $this->_form->addElement('header', 'deleteallusersheader', get_string('deleteallusers', 'local_sigaaintegration'));
         $this->_form->addElement('submit', 'deleteusers', get_string('delete', 'local_sigaaintegration'));
         $this->_form->setExpanded('deleteallusersheader');
+
+        $this->_form->addElement('header', 'deleteallcategoriesheader', get_string('deleteallcategories', 'local_sigaaintegration'));
+        $this->_form->addElement('submit', 'deletecategories', get_string('delete', 'local_sigaaintegration'));
+        $this->_form->setExpanded('deleteallcategoriesheader');
     }
 
     public function validation($data, $files)
