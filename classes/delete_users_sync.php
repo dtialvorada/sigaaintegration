@@ -15,7 +15,7 @@ class delete_users_sync {
         global $DB;
 
         // Obtém o contexto do sistema (onde as permissões de administrador são aplicadas)
-        $system_context = context_system::instance();
+        //$system_context = context_system::instance();
 
         // Verifica se o usuário tem a função de administrador no contexto do sistema
         return is_siteadmin($user_id);
@@ -42,7 +42,7 @@ class delete_users_sync {
         foreach ($users as $user) {
             try {
                 // Verifica se o usuário é administrador
-                if (is_user_admin($user->id)) {
+                if ($this->is_user_admin($user->id)) {
                     echo "Usuário ignorado (Administrador): {$user->username} (ID: {$user->id})\n";
                     continue;
                 }
@@ -61,10 +61,10 @@ class delete_users_sync {
     }
 
     // Função principal para execução do script
-    private function execute_script() {
+    public function execute_script() {
         try {
             // Executa a função de deletar todos os usuários, exceto administradores
-            delete_all_users_except_admins();
+            $this->delete_all_users_except_admins();
 
             echo "\nProcesso de deleção concluído com sucesso.\n";
         } catch (Exception $e) {
