@@ -22,6 +22,15 @@
  */
 use local_sigaaintegration\admin_setting_academic_period;
 
+function sanitizeString($string) {
+    // Remover acentos
+    $string = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+    
+    // Remover espaços e caracteres especiais
+    $string = preg_replace('/[^a-zA-Z0-9]/', '', $string);
+
+    return strtolower($string);
+}
 
 $settings = new admin_settingpage(
     'local_sigaaintegration',
@@ -87,7 +96,7 @@ if ($ADMIN->fulltree) {
 
         foreach ($clientnames as $client) {
             $client = trim($client);
-
+            $client = sanitizeString($client);
             $settings->add(new admin_setting_heading(
                 'api_config_' . $client,
                 new lang_string('client_config', 'local_sigaaintegration') . ': ' . $client,
