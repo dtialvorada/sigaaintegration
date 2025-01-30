@@ -72,15 +72,15 @@ $string['error:user_already_enrolled'] = 'User "{$a->userid}" is already enrolle
 $string['error:course_already_exists'] = 'Course already exists.';
 
 $string['clientlist'] = 'Client list';
-$string['clientlist_desc'] = 'Client list Desc';
+$string['clientlist_desc'] = 'List of campus to configure, separated by comma. Ex: alvorada, osorio, porto alegre';
 $string['client_config'] = 'IFRS';
 
 $string['id_campus'] = 'id_campus';
-$string['id_campus_information'] = 'id_campus - SIGAA';
-$string['scheduled_sync_information'] = 'Scheduled sync information';
+$string['id_campus_information'] = 'SIGAA id from SIGAA API';
+$string['scheduled_sync_information'] = 'The sync will be scheduled or not';
 $string['scheduled_sync'] = 'Scheduled sync';
 $string['academic_period'] = 'Academic period';
-$string['academic_period_information'] = 'academic_period information';
+$string['academic_period_information'] = 'Academic period to be synchronized. Ex: 2025/1';
 $string['error_current_term_format'] = 'The academic period format "{$a}" is incorrect. Please use the format YYYY/N (where YYYY is the year and N is the semester number, 1 or 2). For more information, please refer to the documentation.';
 
 $string['presencial'] = 'Presencial';

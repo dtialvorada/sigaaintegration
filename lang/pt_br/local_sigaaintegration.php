@@ -36,6 +36,7 @@ $string['apiclientid'] = 'Client ID';
 $string['apiclientid_information'] = 'Client ID da API do SIGAA.';
 $string['apiclientsecret'] = 'Client Secret';
 $string['apiclientsecret_information'] = 'Client Secret da API do SIGAA.';
+$string['clientlist_desc'] = 'Lista dos campus que serão configurados, separados por vírgula. Ex: alvorada, osorio, porto alegre';
 $string['othersettings'] = 'Outras Configurações';
 $string['cpffieldname'] = 'Nome do Campo de CPF';
 $string['cpffieldname_information'] = '<p>Nome breve do campo personalizado utilizado para armazenar o CPF do professor.<br/>
@@ -96,8 +97,8 @@ $string['error:course_already_exists'] = 'Course already exists.';
 
 
 $string['id_campus'] = 'id_campus';
-$string['id_campus_information'] = 'id_campus_information';
-$string['scheduled_sync_information'] = 'scheduled_sync_information';
+$string['id_campus_information'] = 'id do campus na API do SIGAA';
+$string['scheduled_sync_information'] = 'A tarefa de sincronização será agendada ou não.';
 $string['scheduled_sync'] = 'scheduled_sync';
 $string['current_term'] = 'current_term';
 $string['current_term_information'] = 'current_term_information';
@@ -110,6 +111,8 @@ $string['remoto'] = 'Remoto';
 
 $string['modalidade_educacao'] = 'Modalidade Educação';
 $string['modalidade_educacao_information'] = 'Modalidade Educação';
+
+$string['academic_period_information'] = 'Periodo letivo a ser sincronizado. Ex: 2025/1';
 
 $string['coursevisibility'] = 'Visibilidade do curso';
 $string['coursevisibility_desc'] = 'Defina se os cursos devem ser visíveis ou ocultos por padrão ao serem criados.';
