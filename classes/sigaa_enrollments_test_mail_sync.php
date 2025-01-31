@@ -41,7 +41,6 @@ class sigaa_enrollments_test_mail_sync {
         $this->cpf = $cpf;
         $this->courseidnumber = $courseidnumber;
         $this->userroleid = configuration::getIdPapelProfessor();
-        mtrace("Entrei no construtor");
     }
 
     public function sync(): void

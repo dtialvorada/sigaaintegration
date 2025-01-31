@@ -48,9 +48,6 @@ if ($data = $form->get_data()) {
             $task = new test_mail_adhoc_task();
             setTaskData($task, $data->cpf, $data->courseidnumber);
 
-        } else {
-            mtrace("Deu ruim nos atributos do form");
-            var_dump($data);
         }
 
         if (!empty($task)) {
