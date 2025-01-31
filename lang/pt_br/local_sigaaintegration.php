@@ -118,3 +118,11 @@ $string['coursevisibility'] = 'Visibilidade do curso';
 $string['coursevisibility_desc'] = 'Defina se os cursos devem ser visíveis ou ocultos por padrão ao serem criados.';
 $string['visible'] = 'Visível';
 $string['hidden'] = 'Oculto';
+
+$string['testmail'] = 'SIGAA Integration - Teste de E-mail';
+$string['cpf'] = 'CPF';
+$string['cpf_help'] = 'Digite seu CPF (Cadastro de Pessoa Física).';
+$string['courseidnumber'] = 'Número de Identificação do Curso';
+$string['courseidnumber_help'] = 'Digite o número de identificação do curso.';
+$string['required'] = 'Este campo é obrigatório.';
+$string['email_sent'] = 'E-mail enviado com os dados fornecidos.';

@@ -35,6 +35,13 @@ $manageintegration = new admin_externalpage(
 );
 $ADMIN->add('root', $manageintegration);
 
+$manageintegration = new admin_externalpage(
+    'local_sigaaintegration_testmail',
+    new lang_string('testmail', 'local_sigaaintegration'),
+    new moodle_url('/local/sigaaintegration/testmail.php')
+);
+$ADMIN->add('root', $manageintegration);
+
 if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_heading(
         'apisettings',

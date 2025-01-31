@@ -96,4 +96,10 @@ $string['coursevisibility_desc'] = 'Set whether courses should be visible or hid
 $string['visible'] = 'Visible';
 $string['hidden'] = 'Hidden';
 
-
+$string['testmail'] = 'SIGAA Integration - Test Email';
+$string['cpf'] = 'CPF';
+$string['cpf_help'] = 'Enter your CPF (Brazilian individual taxpayer registry identification).';
+$string['courseidnumber'] = 'Course ID Number';
+$string['courseidnumber_help'] = 'Enter the course identification number.';
+$string['required'] = 'This field is required.';
+$string['email_sent'] = 'Email sent with the provided data.';
