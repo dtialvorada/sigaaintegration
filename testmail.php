@@ -24,6 +24,15 @@ use local_sigaaintegration\task\test_mail_adhoc_task;
 require_once('../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 
+function setTaskData($task, $cpf, $courseid) {
+
+    $task->set_custom_data((object) [
+        'cpf' => $cpf,
+        'courseidnumber' => $courseid,
+    ]);
+}
+
+
 $returnurl = new moodle_url('/local/sigaaintegration/testmail.php');
 
 admin_externalpage_setup('local_sigaaintegration_testmail');
@@ -32,26 +41,32 @@ $form = new test_mail_form();
 
 if ($data = $form->get_data()) {
 
-    if (isset($data->cpf) && isset($data->courseidnumber)) {
-        $message = "Teste de email adicionado na fila para processamento.";
-        $task = new test_mail_adhoc_task();
-    } else {
-        mtrace("Deu ruim nos atributos do form");
-        var_dump($data);
+    if(isset($data->submitbutton)){
+        if (isset($data->cpf) && isset($data->courseidnumber)) {
+
+            $message = "Teste de email adicionado na fila para processamento.";
+            $task = new test_mail_adhoc_task();
+            setTaskData($task, $data->cpf, $data->courseidnumber);
+
+        } else {
+            mtrace("Deu ruim nos atributos do form");
+            var_dump($data);
+        }
+
+        if (!empty($task)) {
+
+            \core\task\manager::queue_adhoc_task($task);
+        }
+
+        if (!empty($message)) {
+            \core\notification::add($message, \core\output\notification::NOTIFY_INFO);
+            redirect($returnurl);
+        }
     }
 
-    if (!empty($task)) {
-
-        \core\task\manager::queue_adhoc_task($task);
-    }
-
-    if (!empty($message)) {
-        \core\notification::add($message, \core\output\notification::NOTIFY_INFO);
-        redirect($returnurl);
-    }
 
 } else {
-
+    var_dump($_POST);
     mtrace("vazio no data");
 }
 

@@ -34,12 +34,13 @@ class sigaa_enrollments_test_mail_sync {
 
     private string $courseidnumber;
 
+    private string $userroleid;
 
     public function __construct(string $cpf, string $courseidnumber)
     {
         $this->cpf = $cpf;
         $this->courseidnumber = $courseidnumber;
-        $this->studentroleid = configuration::getIdPapelProfessor();
+        $this->userroleid = configuration::getIdPapelProfessor();
         mtrace("Entrei no construtor");
     }
 
@@ -133,7 +134,7 @@ class sigaa_enrollments_test_mail_sync {
         }
 
         $manualenrol = enrol_get_plugin('manual');
-        $manualenrol->enrol_user($manualenrolinstance, $user->id, $this->studentroleid);
+        $manualenrol->enrol_user($manualenrolinstance, $user->id, $this->userroleid);
         mtrace(sprintf(
             "INFO: O docente foi inscrito na disciplina com sucesso. usuário: %s, disciplina: %s",
             $user->username,
