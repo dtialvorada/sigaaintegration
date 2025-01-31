@@ -150,6 +150,7 @@ class sigaa_enrollments_test_mail_sync {
             $user->username,
             $course->idnumber
         ));
+        $this->send_enrollment_notification($user, $course);
     }
 
     /**
@@ -173,6 +174,34 @@ class sigaa_enrollments_test_mail_sync {
         ));
 
         $this->enroll_teacher($course, $user);
+    }
+
+    /**
+     * Envia notificação por e-mail para o professor informando sobre a inscrição na disciplina.
+     */
+    private function send_enrollment_notification(object $user, object $course): void
+    {
+        global $CFG, $SITE;
+        require_once($CFG->libdir . '/moodlelib.php'); // Importação para `email_to_user()`
+
+        $subject = "Inscrição na disciplina '{$course->fullname}'";
+        $messagehtml = "<p>Olá <strong>{$user->firstname}</strong>,</p>";
+        $messagehtml .= "<p>Você foi inscrito na disciplina <strong>{$course->fullname}</strong>.</p>";
+        $messagehtml .= "<p>Acesse o curso através do seguinte link: <a href='{$CFG->wwwroot}/course/view.php?id={$course->id}'>Abrir curso</a></p>";
+        $messagehtml .= "<p>Atenciosamente,<br>Equipe {$SITE->fullname}</p>";
+
+        $messagetext = strip_tags(str_replace('<br>', "\n", $messagehtml));
+
+        $admin = get_admin(); // Usuário remetente (administrador do Moodle)
+
+        // Enviar e-mail
+        $email_sent = email_to_user($user, $admin, $subject, $messagetext, $messagehtml);
+
+        if ($email_sent) {
+            mtrace("INFO: E-mail de notificação enviado para {$user->email}");
+        } else {
+            mtrace("ERRO: Falha ao enviar e-mail para {$user->email}");
+        }
     }
 
 }
