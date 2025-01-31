@@ -103,3 +103,4 @@ $string['courseidnumber'] = 'Course ID Number';
 $string['courseidnumber_help'] = 'Enter the course identification number.';
 $string['required'] = 'This field is required.';
 $string['email_sent'] = 'Email sent with the provided data.';
+$string['invalidcpf'] = 'Invalid cpf';

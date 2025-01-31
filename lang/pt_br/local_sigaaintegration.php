@@ -126,3 +126,4 @@ $string['courseidnumber'] = 'Número de Identificação do Curso';
 $string['courseidnumber_help'] = 'Digite o número de identificação do curso.';
 $string['required'] = 'Este campo é obrigatório.';
 $string['email_sent'] = 'E-mail enviado com os dados fornecidos.';
+$string['invalidcpf'] = 'CPF ou username inválido.';

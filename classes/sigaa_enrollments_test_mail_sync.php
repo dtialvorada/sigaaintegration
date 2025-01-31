@@ -46,8 +46,18 @@ class sigaa_enrollments_test_mail_sync {
 
     public function sync(): void
     {
-        mtrace("Executando");
-        $this->enroll_teacher_into_courses();
+        global $DB;
+        $transaction = $DB->start_delegated_transaction();
+        try {
+            $this->enroll_teacher_into_courses();
+            $transaction->allow_commit();
+        } catch (Exception $e) {
+            $transaction->rollback($e);
+            mtrace('ERROR: Transação falhou. ' . $e->getMessage());
+        }
+
+        gc_collect_cycles(); // Liberar memória após cada lote
+
     }
 
     private function enroll_teacher_into_courses(): void
