@@ -10,6 +10,8 @@ namespace local_sigaaintegration;
 
 use core_course_category;
 
+set_time_limit(5000);
+
 class sigaa_students_sync extends sigaa_base_sync
 {
     private string $ano;
@@ -71,14 +73,15 @@ class sigaa_students_sync extends sigaa_base_sync
                         if($this->search_course($courseidnumber)) {
                             //inserir usuario no moodle
                             $this->user_moodle->insert($record);
+                            continue;//inserindo a primeira vez, não preciso olhar o restante das disciplinas para esse usuario.
                         }
                     }
                 } catch (Exception $e) {
                     mtrace(sprintf(
-                        'ERRO: Falha ao processar inscrição de estudante em uma disciplina. ' .
-                        'matrícula: %s, usuário: %s, disciplina: %s, erro: %s',
-                        $enrollment['matricula'],
-                        $user->username,
+                        'ERRO: Falha ao processar criação de estudante no moodle. ' .
+                        'Usuário: %s, usuário: %s, disciplina: %s, erro: %s',
+                        $record['matricula'],
+                        $record['nome_completo'],
                         $courseidnumber,
                         $e->getMessage()
                     ));
