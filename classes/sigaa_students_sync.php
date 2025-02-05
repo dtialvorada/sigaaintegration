@@ -63,37 +63,29 @@ class sigaa_students_sync extends sigaa_base_sync
     private function insert_student_if_course_exists($campus, array $enrollments): void
     {
         foreach ($enrollments as $record) {
-            foreach ($record['disciplinas'] as $course_enrollment) {
-                try {
-                    if($this->validate($course_enrollment)) {
-                        // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
-                        $course_discipline = $this->course_discipline_mapper->map_to_course_discipline($record, $course_enrollment);
-                        $courseidnumber = $course_discipline->generate_course_idnumber($campus);
-                        //mtrace($courseidnumber);
-                        if($this->search_course($courseidnumber)) {
-                            //inserir usuario no moodle
-                            $this->user_moodle->insert($record);
-                            continue;//inserindo a primeira vez, não preciso olhar o restante das disciplinas para esse usuario.
-                        }
-                    }
-                } catch (Exception $e) {
-                    mtrace(sprintf(
-                        'ERRO: Falha ao processar criação de estudante no moodle. ' .
-                        'Usuário: %s, usuário: %s, disciplina: %s, erro: %s',
-                        $record['matricula'],
-                        $record['nome_completo'],
-                        $courseidnumber,
-                        $e->getMessage()
-                    ));
+            try {
+                // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
+                $courseidnumber = $campus->id_campus.'.'.$record['id_curso'];//ex: 53.44973, procura pela existência do curso.
+                if($this->search_course_by_id($courseidnumber)) {
+                    //inserir usuario no moodle
+                    $this->user_moodle->insert($record);
+                    //continue;//inserindo a primeira vez, não preciso olhar o restante das disciplinas para esse usuario.
                 }
+            } catch (Exception $e) {
+                mtrace(sprintf(
+                    'ERRO: Falha ao processar criação de estudante no moodle. ' .
+                    'Usuário: %s, usuário: %s, disciplina: %s, erro: %s',
+                    $record['matricula'],
+                    $record['nome_completo'],
+                    $courseidnumber,
+                    $e->getMessage()
+                ));
             }
         }
     }
 
-    /**
-     * Busca disciplina pelo código de integração.
-     */
-    private function search_course(string $courseidnumber): ?object
+    //procura pela existencia do curso no moodle
+    private function search_course_by_id(string $courseidnumber): ?object
     {
         /**
          * Evita busca repetida por disciplinas não encontradas.
@@ -108,20 +100,35 @@ class sigaa_students_sync extends sigaa_base_sync
 
         $this->courseNotFound[] = $courseidnumber;
         return null;
+
     }
 
-    // protected function process_records(campus $campus, array $records): void
+    // private function insert_student_if_course_exists($campus, array $enrollments): void
     // {
-    //     mtrace("Processando dados: ". $campus->description);
-    //     foreach ($records as $key => $record) {
-    //         try {
-    //             $this->user_moodle->insert($record);
-    //         } catch (Exception $e) {
-    //             mtrace(sprintf(
-    //                 'ERRO: Falha ao processar o estudante. Matrícula: %s, erro: %s',
-    //                 $key,
-    //                 $e->getMessage()
-    //             ));
+    //     foreach ($enrollments as $record) {
+    //         foreach ($record['disciplinas'] as $course_enrollment) {
+    //             try {
+    //                 if($this->validate($course_enrollment)) {
+    //                     // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
+    //                     $course_discipline = $this->course_discipline_mapper->map_to_course_discipline($record, $course_enrollment);
+    //                     $courseidnumber = $course_discipline->generate_course_idnumber($campus);
+    //                     //mtrace($courseidnumber);
+    //                     if($this->search_course($courseidnumber)) {
+    //                         //inserir usuario no moodle
+    //                         $this->user_moodle->insert($record);
+    //                         continue;//inserindo a primeira vez, não preciso olhar o restante das disciplinas para esse usuario.
+    //                     }
+    //                 }
+    //             } catch (Exception $e) {
+    //                 mtrace(sprintf(
+    //                     'ERRO: Falha ao processar criação de estudante no moodle. ' .
+    //                     'Usuário: %s, usuário: %s, disciplina: %s, erro: %s',
+    //                     $record['matricula'],
+    //                     $record['nome_completo'],
+    //                     $courseidnumber,
+    //                     $e->getMessage()
+    //                 ));
+    //             }
     //         }
     //     }
     // }
