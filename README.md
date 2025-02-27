@@ -1,6 +1,10 @@
 # SIGAA Integration
 
-Este plug-in automatiza o cadastro de categorias, disciplinas/cursos e incrições de alunos e professores, com base nas informações disponíveis na API REST do SIGAA.
+Este plug-in possui as seguintes funcionalidades:
+- Cadastro de categorias
+- Cadastro de disciplinas/cursos
+- Incrições de alunos e professores, com base nas informações disponíveis na API REST do SIGAA.
+- Cadastro de alunos e professores
 
 # Branching Workflow
 
@@ -15,19 +19,19 @@ Este repositório utiliza um modelo simplificado de versionamento, composto pela
 
 - Faça download do pacote .zip última release disponível.
 ```
-wget https://github.com/igorcemim/sigaaintegration/archive/refs/tags/v1.0.6.zip
+wget https://github.com/dtialvorada/sigaaintegration/releases/tag/v1.1.0
 ```
 - Mova o pacote para a pasta `local/` da instalação do Moodle.
 ```
-mv sigaaintegration-1.0.6.zip /var/www/html/moodle/local
+mv sigaaintegration-1.1.0.zip /var/www/html/moodle/local
 ```
 - Realize a extração do pacote.
 ```
-unzip sigaaintegration-1.0.6.zip
+unzip sigaaintegration-1.1.0.zip
 ```
 - Renomeie o diretório extraído.
 ```
-mv sigaaintegration-1.0.6 sigaaintegration
+mv sigaaintegration-1.1.0.zip sigaaintegration
 ```
 
 ## Método 2 (git)
@@ -36,5 +40,5 @@ Faça clone do repositório dentro da pasta `local/` da instalação do Moodle.
 
 ```
 cd /var/www/html/moodle/local
-git clone https://github.com/igorcemim/sigaaintegration.git
+git clone https://github.com/dtialvorada/sigaaintegration.git
 ```
