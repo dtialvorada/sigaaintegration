@@ -24,11 +24,10 @@ use local_sigaaintegration\task\test_mail_adhoc_task;
 require_once('../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 
-function setTaskData($task, $cpf, $courseid) {
+function setTaskData($task, $cpf) {
 
     $task->set_custom_data((object) [
         'cpf' => $cpf,
-        'courseidnumber' => $courseid,
     ]);
 }
 
@@ -42,16 +41,15 @@ $form = new test_mail_form();
 if ($data = $form->get_data()) {
 
     if(isset($data->submitbutton)){
-        if (isset($data->cpf) && isset($data->courseidnumber)) {
+        if (isset($data->cpf)) {
 
             $message = "Teste de email adicionado na fila para processamento.";
             $task = new test_mail_adhoc_task();
-            setTaskData($task, $data->cpf, $data->courseidnumber);
+            setTaskData($task, $data->cpf);
 
         }
 
         if (!empty($task)) {
-
             \core\task\manager::queue_adhoc_task($task);
         }
 
@@ -60,11 +58,6 @@ if ($data = $form->get_data()) {
             redirect($returnurl);
         }
     }
-
-
-} else {
-    var_dump($_POST);
-    mtrace("vazio no data");
 }
 
 echo $OUTPUT->header();

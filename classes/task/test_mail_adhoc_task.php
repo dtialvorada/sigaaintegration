@@ -26,6 +26,7 @@ namespace local_sigaaintegration\task;
 
 use core\task\adhoc_task;
 use local_sigaaintegration\sigaa_enrollments_test_mail_sync;
+use local_sigaaintegration\sigaa_test_mail;
 
 class test_mail_adhoc_task extends adhoc_task {
 
@@ -45,17 +46,16 @@ class test_mail_adhoc_task extends adhoc_task {
     public function execute() {
         $data = $this->get_custom_data();
 
-        if (!isset($data->cpf) || !isset($data->courseidnumber)) {
+        if (!isset($data->cpf)) {
             mtrace("Erro: Dados do formulário ausentes.");
             return;
         }
 
         mtrace("Iniciando a execução da tarefa ad-hoc...");
         mtrace("CPF: " . $data->cpf);
-        mtrace("Course ID Number: " . $data->courseidnumber);
         mtrace("Tarefa concluída com sucesso.");
 
-        $test_mail_sync = new sigaa_enrollments_test_mail_sync($data->cpf, $data->courseidnumber);
+        $test_mail_sync = new sigaa_test_mail($data->cpf);
         $test_mail_sync->sync();
     }
 

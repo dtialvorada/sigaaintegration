@@ -40,12 +40,6 @@ class test_mail_form extends \moodleform
         $mform->addHelpButton('cpf', 'cpf', 'local_sigaaintegration');
         $mform->addRule('cpf', get_string('required'), 'required');
 
-        // Campo Course ID Number.
-        $mform->addElement('text', 'courseidnumber', get_string('courseidnumber', 'local_sigaaintegration'));
-        $mform->setType('courseidnumber', PARAM_RAW);
-        $mform->addHelpButton('courseidnumber', 'courseidnumber', 'local_sigaaintegration');
-        $mform->addRule('courseidnumber', get_string('required'), 'required');
-
         // Botão de envio.
         $mform->addElement('submit', 'submitbutton', get_string('submit'));
     }
