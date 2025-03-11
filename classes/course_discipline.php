@@ -57,7 +57,7 @@ class course_discipline
 
     public function generate_course_idnumber(campus $campus) {
         $class_group = str_replace(' ', '', $this->class_group);
-        return "{$campus->id_campus}.{$this->course_id}.{$this->discipline_id}.{$class_group}.{$this->period}.{$this->semester_offered}";
+        return "{$campus->id_campus}.{$this->course_id}.{$this->discipline_id}.{$this->class_group}.{$this->period}.{$this->semester_offered}";
     }
 
 }
