@@ -75,30 +75,32 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
     private function enroll_student_into_courses($campus, array $enrollments): void
     {
         foreach ($enrollments as $enrollment) {
-            $user = $this->search_student($enrollment['login']);
             mtrace($enrollment['login']);
+            $user = $this->search_student($enrollment['login']);
             if (!$user) {
                 mtrace(sprintf('ERRO: Usuário não encontrado. usuário: %s', $enrollment['login']));
-                return;
-            }
 
-            foreach ($enrollment['disciplinas'] as $course_enrollment) {
-                try {
-                    if($this->validate($course_enrollment)) {
-                        // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
-                        $course_discipline = $this->course_discipline_mapper->map_to_course_discipline($enrollment, $course_enrollment);
-                        $courseidnumber = $course_discipline->generate_course_idnumber($campus);
-                        $this->enroll_student_into_single_course($user, $courseidnumber);
+            } else {
+                foreach ($enrollment['disciplinas'] as $course_enrollment) {
+                    try {
+                        if ($this->validate($course_enrollment)) {
+                            // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
+                            $course_discipline = $this->course_discipline_mapper->map_to_course_discipline($enrollment, $course_enrollment);
+                            $courseidnumber = $course_discipline->generate_course_idnumber($campus);
+                            $this->enroll_student_into_single_course($user, $courseidnumber);
+                        } else {
+                            mtrace("Disciplina não validada: " . $courseidnumber['id_disciplina)']);
+                        }
+                    } catch (Exception $e) {
+                        mtrace(sprintf(
+                            'ERRO: Falha ao processar inscrição de estudante em uma disciplina. ' .
+                            'matrícula: %s, usuário: %s, disciplina: %s, erro: %s',
+                            $enrollment['matricula'],
+                            $user->username,
+                            $courseidnumber,
+                            $e->getMessage()
+                        ));
                     }
-                } catch (Exception $e) {
-                    mtrace(sprintf(
-                        'ERRO: Falha ao processar inscrição de estudante em uma disciplina. ' .
-                        'matrícula: %s, usuário: %s, disciplina: %s, erro: %s',
-                        $enrollment['matricula'],
-                        $user->username,
-                        $courseidnumber,
-                        $e->getMessage()
-                    ));
                 }
             }
         }
