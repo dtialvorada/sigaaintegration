@@ -88,7 +88,8 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
                             $courseidnumber = $course_discipline->generate_course_idnumber($campus);
                             $this->enroll_student_into_single_course($user, $courseidnumber);
                         } else {
-                            mtrace(sprintf('Disciplina não validada: %s', $course_enrollment['id_disciplina)']));
+                            mtrace('Disciplina não validada:');
+                            mtrace(print_r($course_enrollment, true));
                         }
                     } catch (Exception $e) {
                         mtrace(sprintf(
