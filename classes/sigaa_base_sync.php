@@ -24,9 +24,8 @@ abstract class sigaa_base_sync
         global $DB;
         if($this->clientlist) {
             foreach ($this->clientlist as $campus) {
-
-                mtrace("Campus " . $campus->description . " - Início da Sincronização...");
                 if ($campus->scheduled_sync) {
+                    mtrace("Campus " . $campus->description . ": Início da Sincronização...");
                     $records = $this->get_records($campus);
 
                     mtrace('INFO: Início da sincronização. Total de registros: ' . count($records));
@@ -48,7 +47,10 @@ abstract class sigaa_base_sync
 
                         gc_collect_cycles(); // Liberar memória após cada lote
                     }
+                } else {
+                    mtrace("Campus " . $campus->description . ": Sincronização DESATIVADA!");
                 }
+
             }
         } else {
             mtrace('INFO: Nenhum campus configurado para sincronização.');
