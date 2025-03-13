@@ -65,7 +65,27 @@ $tasks = [
         'minute' => 'R',
     ],
     [
-        'classname' => 'local_sigaaintegration\task\import_enrollments_students_task',
+        'classname' => 'local_sigaaintegration\task\import_teachers_task',
+
+        'blocking' => 0,
+
+        // Every month.
+        'month' => '*',
+
+        // Every day.
+        'day' => '*',
+
+        // Every day of week.
+        'dayofweek' => '*',
+
+        // At 4am
+        'hour' => '4',
+
+        // At a random minute
+        'minute' => 'R',
+    ],
+    [
+        'classname' => 'local_sigaaintegration\task\import_enrollments_teachers_task',
 
         'blocking' => 0,
 
@@ -105,27 +125,7 @@ $tasks = [
         'minute' => 'R',
     ],
     [
-        'classname' => 'local_sigaaintegration\task\import_teachers_task',
-
-        'blocking' => 0,
-
-        // Every month.
-        'month' => '*',
-
-        // Every day.
-        'day' => '*',
-
-        // Every day of week.
-        'dayofweek' => '*',
-
-        // At 4am
-        'hour' => '4',
-
-        // At a random minute
-        'minute' => 'R',
-    ],
-    [
-        'classname' => 'local_sigaaintegration\task\import_enrollments_teachers_task',
+        'classname' => 'local_sigaaintegration\task\import_enrollments_students_task',
 
         'blocking' => 0,
 
