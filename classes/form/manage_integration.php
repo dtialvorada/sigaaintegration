@@ -61,6 +61,7 @@ class manage_integration extends \moodleform
         $this->_form->addElement('submit', 'archivecourses', get_string('archive', 'local_sigaaintegration'));
         $this->_form->setExpanded('archivecoursesheader');
 
+        /* Descomentar esse trecho código habilita a funcionalidade de deletar todos os usuários  e categorias
         $this->_form->addElement('header', 'deleteallusersheader', get_string('deleteallusers', 'local_sigaaintegration'));
         $this->_form->addElement('submit', 'deleteusers', get_string('delete', 'local_sigaaintegration'));
         $this->_form->setExpanded('deleteallusersheader');
@@ -68,6 +69,7 @@ class manage_integration extends \moodleform
         $this->_form->addElement('header', 'deleteallcategoriesheader', get_string('deleteallcategories', 'local_sigaaintegration'));
         $this->_form->addElement('submit', 'deletecategories', get_string('delete', 'local_sigaaintegration'));
         $this->_form->setExpanded('deleteallcategoriesheader');
+        */
     }
 
     public function validation($data, $files)
