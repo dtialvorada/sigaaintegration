@@ -149,8 +149,9 @@ class sigaa_categories_sync extends sigaa_base_sync{
     private function create_category_level_three(campus $campus, course_discipline $course_discipline) {
         global $DB;
 
-        // algumas vezes o semestre_oferta_disciplina está vazio
+        // algumas vezes o semestre oferta disciplina está vazio
         if (isset($course_discipline->period) && isset($course_discipline->semester_offered)) {
+
             $parent_idnumber = $this->generate_category_level_two_id($campus, $course_discipline);
             $parent_category = $DB->get_record('course_categories', ['idnumber' => $parent_idnumber]);
 
@@ -229,7 +230,7 @@ class sigaa_categories_sync extends sigaa_base_sync{
             $discipline["disciplina"],
             $discipline["cod_disciplina"],
             $discipline["id_disciplina"],
-            $discipline["semestre_oferta_disciplina"],
+            $discipline["semestres_oferta"],
             $discipline["periodo"],
             $discipline["situacao_matricula"],
             $discipline["turma"],

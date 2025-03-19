@@ -31,7 +31,14 @@ class course_discipline
         $this->discipline_name = $discipline_name;
         $this->discipline_code = $discipline_code;
         $this->discipline_id = $discipline_id;
-        $this->semester_offered = $semester_offered;
+
+        // Filtra apenas os valores inteiros
+        $valid_semesters = preg_grep('/^\d+$/', $semester_offered);
+
+        // Se houver pelo menos um semestre válido, pega o último
+        $this->semester_offered = !empty($valid_semesters) ? end($valid_semesters) : null;
+
+
         $this->period = $period;
         $this->enrollment_status = $enrollment_status;
         $this->class_group = $class_group;

@@ -130,8 +130,8 @@ class sigaa_enrollments_teachers_sync extends sigaa_base_sync {
     private function validate(array $discipline): bool {
         // Valida os campos necessários da disciplina
         return isset($discipline['periodo']) &&
-            isset($discipline['semestre_oferta_disciplina']) &&
-            $discipline['semestre_oferta_disciplina'] !== null &&
+            isset($discipline['semestres_oferta']) &&
+            ($discipline['semestres_oferta'] !== null || !empty($discipline['semestres_oferta'])) &&
             isset($discipline['turma']) &&
             $discipline['turma'] !== null;
     }
