@@ -12,27 +12,27 @@ class user_moodle
         global $DB, $CFG;
 
         if (!$this->is_user_registered_by_login($record['login'])) {
-            // Validação dos dados do usuário
-            $this->validate_user_data($record);
-
-            // Cria o usuário
-            $user = new stdClass();
-            $user->username = $record['login'];
-            $user->firstname = $this->get_first_name($record['nome_completo']);
-            $user->lastname = $this->get_last_name($record['nome_completo']);
-            //$user->email = $this->generate_email($record);
-            $user->email = $record['email'];
-            $user->password = hash_internal_user_password($this->generate_strong_password());
-            $user->auth = 'manual';
-            $user->confirmed = 1;
-            $user->mnethostid = $CFG->mnet_localhost_id;
 
             try {
+                // Validação dos dados do usuário
+                $this->validate_user_data($record);
+
+                // Cria o usuário
+                $user = new stdClass();
+                $user->username = $record['login'];
+                $user->firstname = $this->get_first_name($record['nome_completo']);
+                $user->lastname = $this->get_last_name($record['nome_completo']);
+                $user->email = $record['email'];
+                $user->password = hash_internal_user_password($this->generate_strong_password());
+                $user->auth = 'manual';
+                $user->confirmed = 1;
+                $user->mnethostid = $CFG->mnet_localhost_id;
+
                 $userid = $DB->insert_record('user', $user);
                 mtrace("INFO: Usuário criado com sucesso. ID: $userid, Login: {$user->username}, Email: {$user->email}");
                 return $userid;
             } catch (Exception $e) {
-                mtrace("ERROR: Erro ao criar usuário {$user->username}. Detalhes: " . $e->getMessage());
+                mtrace("ERROR: Erro ao criar usuário {$record['login']}. Detalhes: " . $e->getMessage());
             }
         }
         return '';
@@ -52,19 +52,28 @@ class user_moodle
         return $DB->record_exists('user', ['username' => $login]);
     }
 
-    protected function validate_user_data(array &$record): void {
+    protected function validate_user_data(array $record): void {
         if (empty($record['login'])) {
             throw new Exception('O campo "login" é obrigatório.');
         }
 
-        // Validação do email
+        // Validação do email gerando um email se necessário
+        /*
         if (empty($record['email']) || !filter_var($record['email'], FILTER_VALIDATE_EMAIL)) {
             // Se o email estiver vazio ou não for válido, gerar um email aleatório
             $record['email'] = $this->generate_email($record);
             mtrace("INFO: Email gerado para o login {$record['login']}: {$record['email']}");
         }
+        */
 
-        // Outras validações...
+        // Verificação de email vazio
+        if (empty($record['email'])) {
+            throw new Exception("ERROR: O campo 'email' está vazio para o login {$record['login']}.");
+        }
+        // Verificação de email inválido
+        elseif (!filter_var($record['email'], FILTER_VALIDATE_EMAIL)) {
+            throw new Exception("ERROR: O e-mail fornecido para o login {$record['login']} não é válido: {$record['email']}");
+        }
     }
 
     protected function generate_email(array $record): string {
