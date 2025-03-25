@@ -5,8 +5,7 @@ use core\context;
 use core_user;
 use dml_exception;
 use Exception;
-
-use local_sigaaintegration\utils\SigaaUtils;
+use local_sigaaintegration\utils\sigaa_utils;
 use moodle_exception;
 
 class sigaa_courses_sync extends sigaa_base_sync{
@@ -51,9 +50,9 @@ class sigaa_courses_sync extends sigaa_base_sync{
 
         try {
             $class_group = str_replace(' ', '', $course_discipline->class_group);
-            $period = $this->removerZeroNoPeriodo($course_discipline->period);
-            $fullname = "{$course_discipline->discipline_name} / {$course_discipline->semester_offered}" . $this->get_year_or_semester_suffix($course_discipline->period) . " / {$period}";
-            $shortname = "{$course_discipline->discipline_code} / {$course_discipline->course_id} / {$class_group} / {$course_discipline->semester_offered}" . $this->get_year_or_semester_suffix($course_discipline->period) . " / {$course_discipline->period}";
+            $period = sigaa_utils::remove_zero_in_the_period($course_discipline->period);
+            $fullname = "{$course_discipline->discipline_name} / {$course_discipline->semester_offered}" . sigaa_utils::get_year_or_semester_suffix($course_discipline->period) . " / {$period}";
+            $shortname = "{$course_discipline->discipline_code} / {$course_discipline->course_id} / {$class_group} / {$course_discipline->semester_offered}" . sigaa_utils::get_year_or_semester_suffix($course_discipline->period) . " / {$course_discipline->period}";
 
 
             $course_idnumber = $course_discipline->generate_course_idnumber($campus);
@@ -102,7 +101,7 @@ class sigaa_courses_sync extends sigaa_base_sync{
             foreach ($student["disciplinas"] as $discipline) {
 
                 // Valida a disciplina
-                if (SigaaUtils::validateDiscipline($discipline)) {
+                if (sigaa_utils::validate_discipline($discipline)) {
                     // Mapeia os dados da disciplina para o objeto course_discipline
                     $discipline_obj = $this->course_discipline_mapper->map_to_course_discipline($student, $discipline);
 
@@ -121,19 +120,6 @@ class sigaa_courses_sync extends sigaa_base_sync{
 
     }
 
-    private function validate(array $discipline): bool {
-        // Valida os campos necessários da disciplina
-        return isset($discipline['periodo']) &&
-            isset($discipline['semestres_oferta']) &&
-            ($discipline['semestres_oferta'] !== null || !empty($discipline['semestres_oferta'])) &&
-            isset($discipline['turma']) &&
-            $discipline['turma'] !== null;
-    }
-
-    private function get_year_or_semester_suffix($period) {
-        return (substr($period, -1) === '0') ? 'º ano' : 'º semestre';
-    }
-
     public function get_category_for_discipline($idnumber) {
         global $DB;
         return $DB->get_record('course_categories', ['idnumber' => $idnumber]);
@@ -142,16 +128,6 @@ class sigaa_courses_sync extends sigaa_base_sync{
     public function course_exists($idnumber) {
         global $DB;
         return $DB->record_exists('course', ['idnumber' => $idnumber]);
-    }
-
-    private function removerZeroNoPeriodo($periodo) {
-        // Verifica se o valor após a barra é 0
-        if (substr($periodo, -2) === '/0') {
-            // Remove a parte "/0" da string
-            return substr($periodo, 0, -2);
-        }
-        // Caso não tenha "/0", retorna o valor original
-        return $periodo;
     }
 
     private function generate_category_level_three_id(campus $campus, course_discipline $course_discipline) {

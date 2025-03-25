@@ -27,7 +27,7 @@ namespace local_sigaaintegration;
 use core\context;
 use core_course_category;
 use Exception;
-use local_sigaaintegration\utils\SigaaUtils;
+use local_sigaaintegration\utils\sigaa_utils;
 
 class sigaa_enrollments_students_sync extends sigaa_base_sync
 {
@@ -83,7 +83,7 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
                 mtrace(sprintf('Processando o usuário: %s', $enrollment['login']));
                 foreach ($enrollment['disciplinas'] as $course_enrollment) {
                     try {
-                        if (SigaaUtils::validateDiscipline($course_enrollment)) {
+                        if (sigaa_utils::validate_discipline($course_enrollment)) {
                             // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
                             $course_discipline = $this->course_discipline_mapper->map_to_course_discipline($enrollment, $course_enrollment);
                             $courseidnumber = $course_discipline->generate_course_idnumber($campus);

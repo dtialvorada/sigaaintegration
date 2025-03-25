@@ -1,25 +1,9 @@
 <?php
 
-// This file is part of Moodle - http://moodle.org/
-//
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-
 /**
  *
  * @package   local_sigaaintegration
- * @copyright 2024, Igor Ferreira Cemim
+ * @copyright 2025
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -28,7 +12,7 @@
  use core\context;
  use core_course_category;
  use Exception;
- use local_sigaaintegration\utils\SigaaUtils;
+ use local_sigaaintegration\utils\sigaa_utils;
 
  class sigaa_enrollments_teachers_sync extends sigaa_base_sync {
     private string $ano;
@@ -37,7 +21,7 @@
 
     private array $courseNotFound = [];
 
-    private int $studentroleid;
+    private int $user_role_id;
 
     private $course_discipline_mapper;
 
@@ -48,7 +32,7 @@
         parent::__construct();
         $this->ano = $year;
         $this->periodo = $period;
-        $this->studentroleid = configuration::getIdPapelProfessor();
+        $this->user_role_id = configuration::getIdPapelProfessor();
         $this->course_discipline_mapper = new course_discipline_mapper();
     }
 
@@ -79,7 +63,7 @@
         foreach ($enrollments as $enrollment) {
             foreach ($enrollment['disciplinas'] as $course_enrollment) {
                 try {
-                    if(SigaaUtils::validateDiscipline($course_enrollment)) {
+                    if(sigaa_utils::validate_discipline($course_enrollment)) {
                         // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
                         $course_discipline = $this->course_discipline_mapper->map_to_course_discipline($enrollment, $course_enrollment);
                         $courseidnumber = $course_discipline->generate_course_idnumber($campus);
@@ -182,7 +166,7 @@
         }
 
         $manualenrol = enrol_get_plugin('manual');
-        $manualenrol->enrol_user($manualenrolinstance, $user->id, $this->studentroleid);
+        $manualenrol->enrol_user($manualenrolinstance, $user->id, $this->user_role_id);
         mtrace(sprintf(
             "INFO: O docente foi inscrito na disciplina com sucesso. usuário: %s, disciplina: %s",
             $user->username,
@@ -193,14 +177,14 @@
     /**
      * Tenta increver o professor em uma determinada disciplina retornada pela API do SIGAA.
      */
-    private function enroll_teacher_into_single_course(object $user, string $courseidnumber) :void
+    private function enroll_teacher_into_single_course(object $user, string $course_idnumber) :void
     {
-        $course = $this->search_course($courseidnumber);
+        $course = $this->search_course($course_idnumber);
         if (!$course) {
             mtrace(sprintf(
                 'ERRO: Disciplina não encontrada. Inscrição não realizada. usuário: %s, disciplina: %s',
                 $user->username,
-                $courseidnumber
+                $course_idnumber
             ));
             return;
         }
