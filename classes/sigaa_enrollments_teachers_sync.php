@@ -28,8 +28,9 @@
  use core\context;
  use core_course_category;
  use Exception;
+ use local_sigaaintegration\utils\SigaaUtils;
 
-class sigaa_enrollments_teachers_sync extends sigaa_base_sync {
+ class sigaa_enrollments_teachers_sync extends sigaa_base_sync {
     private string $ano;
 
     private string $periodo;
@@ -78,7 +79,7 @@ class sigaa_enrollments_teachers_sync extends sigaa_base_sync {
         foreach ($enrollments as $enrollment) {
             foreach ($enrollment['disciplinas'] as $course_enrollment) {
                 try {
-                    if($this->validate($course_enrollment)) {
+                    if(SigaaUtils::validateDiscipline($course_enrollment)) {
                         // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
                         $course_discipline = $this->course_discipline_mapper->map_to_course_discipline($enrollment, $course_enrollment);
                         $courseidnumber = $course_discipline->generate_course_idnumber($campus);
@@ -125,15 +126,6 @@ class sigaa_enrollments_teachers_sync extends sigaa_base_sync {
     {
         global $DB;
         return $DB->get_record('user', ['username' => $login]);
-    }
-
-    private function validate(array $discipline): bool {
-        // Valida os campos necessários da disciplina
-        return isset($discipline['periodo']) &&
-            isset($discipline['semestres_oferta']) &&
-            ($discipline['semestres_oferta'] !== null || !empty($discipline['semestres_oferta'])) &&
-            isset($discipline['turma']) &&
-            $discipline['turma'] !== null;
     }
 
     /**

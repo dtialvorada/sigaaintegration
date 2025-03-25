@@ -6,6 +6,7 @@ use core_user;
 use dml_exception;
 use Exception;
 
+use local_sigaaintegration\utils\SigaaUtils;
 use moodle_exception;
 
 class sigaa_courses_sync extends sigaa_base_sync{
@@ -101,7 +102,7 @@ class sigaa_courses_sync extends sigaa_base_sync{
             foreach ($student["disciplinas"] as $discipline) {
 
                 // Valida a disciplina
-                if ($this->validate($discipline)) {
+                if (SigaaUtils::validateDiscipline($discipline)) {
                     // Mapeia os dados da disciplina para o objeto course_discipline
                     $discipline_obj = $this->course_discipline_mapper->map_to_course_discipline($student, $discipline);
 
@@ -156,129 +157,4 @@ class sigaa_courses_sync extends sigaa_base_sync{
     private function generate_category_level_three_id(campus $campus, course_discipline $course_discipline) {
         return "{$campus->id_campus}.{$course_discipline->course_id}.{$course_discipline->period}.{$course_discipline->semester_offered}";
     }
-
-
-
-    /*
-    private function buscar_professor_por_cpf(string $login): object|false {
-        global $DB;
-        return $DB->get_record('user', ['username' => $login]);
-    }
-
-    private function vincular_professores_disciplina(array $docentes, object $disciplina): void {
-        $professorescadastrados = [];
-
-        // Vincula o(s) professor(es)
-        foreach ($docentes as $docente) {
-            // Verifica se o CPF está vazio ou inválido
-            if (empty($docente['cpf_docente'])) {
-                mtrace(sprintf(
-                    'ERRO: Professor sem CPF cadastrado no SIGAA. Não é possível inscrever na disciplina. Nome: %s',
-                    $docente['docente']
-                ));
-                continue;
-            }
-
-            // Corrige o CPF para ter 11 dígitos, se necessário
-            $cpf = $this->validar_e_corrigir_cpf($docente['cpf_docente']);
-
-            if (!$cpf) {
-                mtrace(sprintf(
-                    'ERRO: CPF inválido para o professor: %s. Não foi possível inscrever na disciplina. Disciplina: %s',
-                    $docente['docente'],
-                    $disciplina->idnumber
-                ));
-                continue;
-            }
-
-            // Atualiza o CPF corrigido no docente
-            $docente['cpf_docente'] = $cpf;
-
-            // Busca o usuário pelo CPF
-            $usuariodocente = $this->buscar_professor_por_cpf($cpf);
-            if (!$usuariodocente) {
-                mtrace(sprintf(
-                    'ERRO: Professor não encontrado. Professor: %s, Disciplina: %s',
-                    $cpf,
-                    $disciplina->idnumber
-                ));
-                continue;
-            }
-
-            // Realiza inscrição
-            $this->vincular_professor($disciplina, $usuariodocente);
-
-            $professorescadastrados[] = $cpf;
-        }
-    }
-    */
-
-    /*
-    private function validar_e_corrigir_cpf(string $cpf): ?string {
-        // Remove qualquer caractere não numérico
-        $cpf = preg_replace('/\D/', '', $cpf);
-
-        // Verifica se o CPF tem 11 dígitos
-        if (strlen($cpf) !== 11) {
-            // Se o CPF não tiver 11 dígitos, corrige adicionando zeros à esquerda
-            $cpf = str_pad($cpf, 11, '0', STR_PAD_LEFT);
-        }
-
-        // Verifica se o CPF é válido
-        if ($this->validar_cpf($cpf)) {
-            return $cpf;
-        }
-        // Se o CPF não for válido, retorna null
-        return null;
-    }
-
-    private function validar_cpf(string $cpf): bool {
-        // Exemplo de validação simples (aceita qualquer número de 11 dígitos)
-        return preg_match('/^\d{11}$/', $cpf);
-    }
-
-    */
-
-    /**
-     * Inscreve o professor ao curso e vincula as roles necessárias no contexto do curso.
-     *
-     * @throws moodle_exception
-     * @throws dml_exception
-
-    private function vincular_professor(object $course, object $user): void {
-        global $CFG;
-        require_once($CFG->dirroot . '/lib/enrollib.php');
-
-        if (is_enrolled(context\course::instance($course->id), $user)) {
-            mtrace(sprintf(
-                'INFO: Professor já está inscrito na disciplina. usuário: %s, disciplina: %s',
-                $user->username,
-                $course->idnumber
-            ));
-            return;
-        }
-
-        $enrolinstances = enrol_get_instances($course->id, true);
-        $manualenrolinstance = current(array_filter($enrolinstances, function($instance) {
-            return $instance->enrol == 'manual';
-        }));
-        if (empty($manualenrolinstance)) {
-            mtrace(
-                'ERRO: o plugin Inscrição Manual ativado é um pré-requisito para o funcionamento da ' .
-                'integração com o SIGAA. Ative o plugin Inscrição Manual e execute o processo de integração novamente.'
-            );
-            return;
-        }
-
-        $manualenrol = enrol_get_plugin('manual');
-        $manualenrol->enrol_user($manualenrolinstance, $user->id, $this->editingteacherroleid);
-
-        mtrace(sprintf(
-            "INFO: Professor inscrito na disciplina com sucesso. professor: %s, disciplina: %s",
-            $user->username,
-            $course->idnumber
-        ));
-    }
-    */
-
 }

@@ -102,34 +102,4 @@ class sigaa_students_sync extends sigaa_base_sync
         return null;
 
     }
-
-    // private function insert_student_if_course_exists($campus, array $enrollments): void
-    // {
-    //     foreach ($enrollments as $record) {
-    //         foreach ($record['disciplinas'] as $course_enrollment) {
-    //             try {
-    //                 if($this->validate($course_enrollment)) {
-    //                     // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
-    //                     $course_discipline = $this->course_discipline_mapper->map_to_course_discipline($record, $course_enrollment);
-    //                     $courseidnumber = $course_discipline->generate_course_idnumber($campus);
-    //                     //mtrace($courseidnumber);
-    //                     if($this->search_course($courseidnumber)) {
-    //                         //inserir usuario no moodle
-    //                         $this->user_moodle->insert($record);
-    //                         continue;//inserindo a primeira vez, não preciso olhar o restante das disciplinas para esse usuario.
-    //                     }
-    //                 }
-    //             } catch (Exception $e) {
-    //                 mtrace(sprintf(
-    //                     'ERRO: Falha ao processar criação de estudante no moodle. ' .
-    //                     'Usuário: %s, usuário: %s, disciplina: %s, erro: %s',
-    //                     $record['matricula'],
-    //                     $record['nome_completo'],
-    //                     $courseidnumber,
-    //                     $e->getMessage()
-    //                 ));
-    //             }
-    //         }
-    //     }
-    // }
 }

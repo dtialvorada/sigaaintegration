@@ -25,7 +25,7 @@
 namespace local_sigaaintegration\task;
 
 use core\task\adhoc_task;
-use local_sigaaintegration\sigaa_enrollments_syncOld;
+use local_sigaaintegration\sigaa_enrollments_students_sync;
 
 class import_enrollments_adhoc_task extends adhoc_task {
 
@@ -44,7 +44,7 @@ class import_enrollments_adhoc_task extends adhoc_task {
 
     public function execute() {
         $parameters = $this->get_custom_data();
-        $enrollmentssync = new sigaa_enrollments_syncOld($parameters->ano, $parameters->periodo);
+        $enrollmentssync = new sigaa_enrollments_students_sync($parameters->ano, $parameters->periodo);
         $enrollmentssync->sync();
     }
 
