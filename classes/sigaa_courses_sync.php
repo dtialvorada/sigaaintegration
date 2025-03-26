@@ -51,7 +51,7 @@ class sigaa_courses_sync extends sigaa_base_sync{
         try {
             $class_group = str_replace(' ', '', $course_discipline->class_group);
             $period = sigaa_utils::remove_zero_in_the_period($course_discipline->period);
-            $fullname = "{$course_discipline->discipline_name} / {$course_discipline->semester_offered}" . sigaa_utils::get_year_or_semester_suffix($course_discipline->period) . " / {$period}";
+            $fullname = "{$course_discipline->discipline_name} / {$course_discipline->course_name} / {$course_discipline->semester_offered}" . sigaa_utils::get_year_or_semester_suffix($course_discipline->period) . " / {$period}";
             $shortname = "{$course_discipline->discipline_code} / {$course_discipline->course_id} / {$class_group} / {$course_discipline->semester_offered}" . sigaa_utils::get_year_or_semester_suffix($course_discipline->period) . " / {$course_discipline->period}";
 
 
