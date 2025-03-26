@@ -143,6 +143,13 @@ if ($ADMIN->fulltree) {
                 ]
             ));
 
+            $settings->add(new admin_setting_configcheckbox(
+                "local_sigaaintegration/createcourseifturmanull_{$client}",
+                new lang_string('createcourseifturmanull', 'local_sigaaintegration'),
+                new lang_string('createcourseifturmanull_desc', 'local_sigaaintegration'),
+                0 // Valor padrão: desmarcado (0)
+            ));
+
         }
     }
 

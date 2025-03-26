@@ -104,3 +104,6 @@ $string['courseidnumber_help'] = 'Enter the course identification number.';
 $string['required'] = 'This field is required.';
 $string['email_sent'] = 'Email sent with the provided data.';
 $string['invalidcpf'] = 'Invalid cpf';
+
+$string['createcourseifturmanull'] = 'Create course if turma is null';
+$string['createcourseifturmanull_desc'] = 'Create a new course when turma value is null.';

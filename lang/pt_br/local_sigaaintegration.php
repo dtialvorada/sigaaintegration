@@ -127,3 +127,6 @@ $string['courseidnumber_help'] = 'Digite o número de identificação do curso.'
 $string['required'] = 'Este campo é obrigatório.';
 $string['email_sent'] = 'E-mail enviado com os dados fornecidos.';
 $string['invalidcpf'] = 'CPF ou username inválido.';
+
+$string['createcourseifturmanull'] = 'Criar curso se a turma for nula';
+$string['createcourseifturmanull_desc'] = 'Criar um novo curso quando o valor da turma for nulo.';
