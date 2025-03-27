@@ -49,40 +49,46 @@ class sigaa_courses_sync extends sigaa_base_sync{
         require_once($CFG->dirroot . '/course/lib.php');
 
         try {
-            $class_group = str_replace(' ', '', $course_discipline->class_group);
-            $period = sigaa_utils::remove_zero_in_the_period($course_discipline->period);
-            $fullname = "{$course_discipline->discipline_name} / {$course_discipline->course_name} / {$course_discipline->semester_offered}" . sigaa_utils::get_year_or_semester_suffix($course_discipline->period) . " / {$period}";
-            $shortname = "{$course_discipline->discipline_code} / {$course_discipline->course_id} / {$class_group} / {$course_discipline->semester_offered}" . sigaa_utils::get_year_or_semester_suffix($course_discipline->period) . " / {$course_discipline->period}";
-
-
+            mtrace("Processando ID Disciplina: {$course_discipline->discipline_id}");
             $course_idnumber = $course_discipline->generate_course_idnumber($campus);
-            if (!$this->course_exists($course_idnumber)) {
-                $category_idnumber = $this->generate_category_level_three_id($campus, $course_discipline);
-                $category = $this->get_category_for_discipline($category_idnumber);
+            if($course_idnumber) {
+                mtrace("idnumber: " . $course_idnumber);
+                $class_group = $course_discipline->generate_class_group($campus);
+                $period = sigaa_utils::remove_zero_in_the_period($course_discipline->period);
+                $fullname = "{$course_discipline->discipline_name} / {$course_discipline->course_name} / {$course_discipline->semester_offered}" . sigaa_utils::get_year_or_semester_suffix($course_discipline->period) . " / {$period}";
+                $shortname = "{$course_discipline->discipline_code} / 
+                            {$course_discipline->course_id} / {$class_group} / 
+                            {$course_discipline->semester_offered}" . sigaa_utils::get_year_or_semester_suffix($course_discipline->period) .
+                    " / {$course_discipline->period}";
 
-                if ($category) {
-                    $newCourse = (object)[
-                        'fullname' => $fullname,
-                        'shortname' => $shortname,
-                        'category' => $category->id,
-                        'idnumber' => $course_idnumber,
-                        'summary' => $course_discipline->discipline_name,
-                        'summaryformat' => FORMAT_PLAIN,
-                        'format' => 'topics',
-                        'visible' => $campus->coursevisibility,
-                        'numsections' => 10,
-                        'startdate' => time()
-                    ];
+                if (!$this->course_exists($course_idnumber)) {
+                    $category_idnumber = $this->generate_category_level_three_id($campus, $course_discipline);
+                    $category = $this->get_category_for_discipline($category_idnumber);
 
-                    $new_course = create_course($newCourse);
+                    if ($category) {
+                        $newCourse = (object)[
+                            'fullname' => $fullname,
+                            'shortname' => $shortname,
+                            'category' => $category->id,
+                            'idnumber' => $course_idnumber,
+                            'summary' => $course_discipline->discipline_name,
+                            'summaryformat' => FORMAT_PLAIN,
+                            'format' => 'topics',
+                            'visible' => $campus->coursevisibility,
+                            'numsections' => 10,
+                            'startdate' => time()
+                        ];
 
-                    mtrace(sprintf(
-                        'INFO: Disciplina criada. idnumber: %s, fullname: %s',
-                        $new_course->idnumber,
-                        $new_course->fullname
-                    ));
-                } else {
-                    mtrace("ERROR: Falha ao importar disciplina. Categoria não cadastrada: " . $category_idnumber);
+                        $new_course = create_course($newCourse);
+
+                        mtrace(sprintf(
+                            'INFO: Disciplina criada. idnumber: %s, fullname: %s',
+                            $new_course->idnumber,
+                            $new_course->fullname
+                        ));
+                    } else {
+                        mtrace("ERROR: Falha ao importar disciplina. Categoria não cadastrada: " . $category_idnumber);
+                    }
                 }
             }
         } catch (Exception $exception) {
@@ -91,7 +97,7 @@ class sigaa_courses_sync extends sigaa_base_sync{
 
     }
 
-    private function get_all_course_discipline($campus, $enrollments): ?array {
+    private function get_all_course_discipline(campus $campus, $enrollments): ?array {
         // Inicializando um array para armazenar objetos course_discipline únicos
         $disciplines = [];
 
@@ -99,9 +105,8 @@ class sigaa_courses_sync extends sigaa_base_sync{
         foreach ($enrollments as $enrollment => $student) {
             // Percorrendo as disciplinas do aluno
             foreach ($student["disciplinas"] as $discipline) {
-
                 // Valida a disciplina
-                if (sigaa_utils::validate_discipline($discipline)) {
+                if (sigaa_utils::validate_discipline($discipline, $campus->createcourseifturmanull)) {
                     // Mapeia os dados da disciplina para o objeto course_discipline
                     $discipline_obj = $this->course_discipline_mapper->map_to_course_discipline($student, $discipline);
 
@@ -111,13 +116,12 @@ class sigaa_courses_sync extends sigaa_base_sync{
                         $disciplines[$id] = $discipline_obj;
                     }
                 } else {
-                    //mtrace('A disciplina contém dados inválidos: ' . json_encode($discipline));
+                    mtrace('A disciplina contém dados inválidos: ' . json_encode($discipline));
                 }
             }
         }
         mtrace("INFO: Total de disciplinas únicas geradas para processamento: " . count($disciplines));
         return $disciplines;
-
     }
 
     public function get_category_for_discipline($idnumber) {

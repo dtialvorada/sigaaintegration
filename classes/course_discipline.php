@@ -62,9 +62,30 @@ class course_discipline
             $this->education_mode === $other->education_mode;
     }
 
-    public function generate_course_idnumber(campus $campus) {
-        $class_group = str_replace(' ', '', $this->class_group);
-        return "{$campus->id_campus}.{$this->course_id}.{$this->discipline_id}.{$class_group}.{$this->period}.{$this->semester_offered}";
+    // Função que cria o class_group
+    public function generate_class_group(campus $campus): ?string {
+        $class_group_null = "SemTurma";
+
+        if ($this->class_group !== null && !empty($this->class_group)) {
+            // Remove espaços se class_group não for nulo/vazio
+            return str_replace(' ', '', $this->class_group);
+        } elseif ($campus->createcourseifturmanull) {
+            return $class_group_null;
+        } else {
+            mtrace("ERROR: Revisar a criação do class_group");
+            return false;
+        }
     }
 
+    public function generate_course_idnumber(campus $campus) {
+
+        $class_group = $this->generate_class_group($campus);
+
+        // Verifica se a criação do class_group falhou (retorno false)
+        if ($class_group === false) {
+            return false;
+        }
+
+        return "{$campus->id_campus}.{$this->course_id}.{$this->discipline_id}.{$class_group}.{$this->period}.{$this->semester_offered}";
+    }
 }

@@ -58,35 +58,39 @@
     /**
      * Tenta inscrever o professor nas disciplinas retornadas pela API do SIGAA.
      */
-    private function enroll_teacher_into_courses($campus, array $enrollments): void
+    private function enroll_teacher_into_courses(campus $campus, array $enrollments): void
     {
         foreach ($enrollments as $enrollment) {
             foreach ($enrollment['disciplinas'] as $course_enrollment) {
                 try {
-                    if(sigaa_utils::validate_discipline($course_enrollment)) {
+                    if(sigaa_utils::validate_discipline($course_enrollment, $campus->createcourseifturmanull )) {
                         // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
                         $course_discipline = $this->course_discipline_mapper->map_to_course_discipline($enrollment, $course_enrollment);
                         $courseidnumber = $course_discipline->generate_course_idnumber($campus);
-                        foreach ($course_enrollment['docentes'] as $teacher)
-                        {
-                            // Converter o CPF para string
-                            $cpf_docente_str = strval($teacher['cpf_docente']);
-                            // Garantir que o CPF tenha 11 dígitos, completando com zeros à esquerda, se necessário
-                            $cpf_docente_str = str_pad($cpf_docente_str, 11, "0", STR_PAD_LEFT);
-                            if (in_array($cpf_docente_str, $this->teachersNotFound)) {
-                                mtrace(sprintf('INFO: Usuário previamente registrado como não encontrado. usuário: %s', $cpf_docente_str));
-                                continue;
-                            }
+                        if($courseidnumber){
+                            foreach ($course_enrollment['docentes'] as $teacher)
+                            {
+                                // Converter o CPF para string
+                                $cpf_docente_str = strval($teacher['cpf_docente']);
+                                // Garantir que o CPF tenha 11 dígitos, completando com zeros à esquerda, se necessário
+                                $cpf_docente_str = str_pad($cpf_docente_str, 11, "0", STR_PAD_LEFT);
+                                if (in_array($cpf_docente_str, $this->teachersNotFound)) {
+                                    mtrace(sprintf('INFO: Usuário previamente registrado como não encontrado. usuário: %s', $cpf_docente_str));
+                                    continue;
+                                }
 
-                            // Buscar o usuário no banco
-                            $user = $this->search_teacher($cpf_docente_str);
-                            if (!$user) {
-                                // Adicionar o CPF ao array de usuários não encontrados
-                                $this->teachersNotFound[] = $cpf_docente_str;
-                                mtrace(sprintf('ERRO: Usuário não encontrado. usuário: %s', $cpf_docente_str));
-                            } else {
-                                $this->enroll_teacher_into_single_course($user, $courseidnumber);
+                                // Buscar o usuário no banco
+                                $user = $this->search_teacher($cpf_docente_str);
+                                if (!$user) {
+                                    // Adicionar o CPF ao array de usuários não encontrados
+                                    $this->teachersNotFound[] = $cpf_docente_str;
+                                    mtrace(sprintf('ERRO: Usuário não encontrado. usuário: %s', $cpf_docente_str));
+                                } else {
+                                    $this->enroll_teacher_into_single_course($user, $courseidnumber);
+                                }
                             }
+                        } else {
+                            mtraca("ERRO na geração do idnumber da disciplina");
                         }
                     }
                 } catch (Exception $e) {

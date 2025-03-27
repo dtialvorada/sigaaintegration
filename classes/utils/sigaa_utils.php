@@ -41,11 +41,17 @@ class sigaa_utils {
      * @param array $disciplina Os dados da disciplina.
      * @return bool True se for válida, False caso contrário.
      */
-    public static function validate_discipline(array $discipline): bool {
-        return isset($discipline['periodo']) &&
-            isset($discipline['semestres_oferta']) &&
-            ($discipline['semestres_oferta'] !== null || !empty($discipline['semestres_oferta'])) &&
-            isset($discipline['turma']) &&
-            $discipline['turma'] !== null;
+    public static function validate_discipline(array $discipline, bool $sem_turma): bool {
+        // Verifica os campos básicos da disciplina
+        $discipline_valid = isset($discipline['periodo']) && isset($discipline['semestres_oferta']) &&
+            ($discipline['semestres_oferta'] !== null && !empty($discipline['semestres_oferta']));
+
+        // Se não permitir disciplina sem turma, então a turma deve estar definida e não ser nula
+        if (!$sem_turma) {
+            return $discipline_valid && isset($discipline['turma']) && $discipline['turma'] !== null;
+        }
+
+        return $discipline_valid;
     }
+
 }

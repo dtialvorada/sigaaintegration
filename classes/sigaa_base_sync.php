@@ -50,7 +50,7 @@ abstract class sigaa_base_sync
                 } else {
                     mtrace("Campus " . $campus->description . ": Sincronização DESATIVADA!");
                 }
-
+                mtrace('----------------------------------------');
             }
         } else {
             mtrace('INFO: Nenhum campus configurado para sincronização.');

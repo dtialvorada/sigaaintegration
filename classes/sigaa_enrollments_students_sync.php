@@ -73,7 +73,7 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
     /**
      * Tenta inscrever o estudante nas disciplinas retornadas pela API do SIGAA.
      */
-    private function enroll_student_into_courses($campus, array $enrollments): void
+    private function enroll_student_into_courses(campus $campus, array $enrollments): void
     {
         foreach ($enrollments as $enrollment) {
             $user = $this->search_student($enrollment['login']);
@@ -83,11 +83,16 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
                 mtrace(sprintf('Processando o usuário: %s', $enrollment['login']));
                 foreach ($enrollment['disciplinas'] as $course_enrollment) {
                     try {
-                        if (sigaa_utils::validate_discipline($course_enrollment)) {
+                        if (sigaa_utils::validate_discipline($course_enrollment, $campus->createcourseifturmanull)) {
                             // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
                             $course_discipline = $this->course_discipline_mapper->map_to_course_discipline($enrollment, $course_enrollment);
+
                             $courseidnumber = $course_discipline->generate_course_idnumber($campus);
-                            $this->enroll_student_into_single_course($user, $courseidnumber);
+                            if($courseidnumber){
+                                $this->enroll_student_into_single_course($user, $courseidnumber);
+                            } else {
+                                mtraca("ERRO na geração do idnumber da disciplina");
+                            }
                         } else {
                             mtrace('Disciplina não validada:');
                             mtrace(print_r($course_enrollment, true));
