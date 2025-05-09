@@ -36,7 +36,7 @@ $string['apiclientid'] = 'Client ID';
 $string['apiclientid_information'] = 'Client ID da API do SIGAA.';
 $string['apiclientsecret'] = 'Client Secret';
 $string['apiclientsecret_information'] = 'Client Secret da API do SIGAA.';
-$string['clientlist_desc'] = 'Lista dos campus que serão configurados, separados por vírgula. Ex: alvorada, osorio, porto alegre';
+
 $string['othersettings'] = 'Outras Configurações';
 $string['cpffieldname'] = 'Nome do Campo de CPF';
 $string['cpffieldname_information'] = '<p>Nome breve do campo personalizado utilizado para armazenar o CPF do professor.<br/>
@@ -95,6 +95,9 @@ $string['error:no_enrol_instance'] = 'Manual enrol plugin is disabled.';
 $string['error:user_already_enrolled'] = 'User "{$a->userid}" is already enrolled into course "{$a->courseid}"';
 $string['error:course_already_exists'] = 'Course already exists.';
 
+$string['clientlist'] = 'Lista de campus';
+$string['clientlist_desc'] = 'Lista de campus a serem configurados, separados por vírgula. Exemplo: alvorada, osorio, poa. A lista deve conter apenas a primeira parte do domínio, como em "alvorada.ifrs.edu.br" onde o valor correto é "alvorada".';
+
 
 $string['id_campus'] = 'id_campus';
 $string['id_campus_information'] = 'id do campus na API do SIGAA';
@@ -130,3 +133,9 @@ $string['invalidcpf'] = 'CPF ou username inválido.';
 
 $string['createcourseifturmanull'] = 'Criar curso se a turma for nula';
 $string['createcourseifturmanull_desc'] = 'Criar um novo curso quando o valor da turma for nulo.';
+
+$string['syncemailwithsigaa'] = 'Sincronizar e-mail com o SIGAA';
+$string['syncemailwithsigaa_desc'] = 'Se habilitado, o endereço de e-mail dos usuários será sincronizado com o valor fornecido pelo SIGAA durante os processos de integração.';
+
+$string['preserveinstitutionalemail'] = 'Preservar e-mail institucional no Moodle durante a Sincronização.';
+$string['preserveinstitutionalemail_desc'] = 'Se habilitado, o e-mail institucional do usuário não será sobrescrito pelo e-mail vindo do SIGAA durante a sincronização.';

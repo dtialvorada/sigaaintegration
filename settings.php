@@ -150,6 +150,20 @@ if ($ADMIN->fulltree) {
                 0 // Valor padrão: desmarcado (0)
             ));
 
+            $settings->add(new admin_setting_configcheckbox(
+                "local_sigaaintegration/syncemailwithsigaa_{$client}",
+                new lang_string('syncemailwithsigaa', 'local_sigaaintegration'),
+                new lang_string('syncemailwithsigaa_desc', 'local_sigaaintegration'),
+                0 // Valor padrão: desmarcado (0 = desativado)
+            ));
+
+            $settings->add(new admin_setting_configcheckbox(
+                "local_sigaaintegration/preserveinstitutionalemail_{$client}",
+                new lang_string('preserveinstitutionalemail', 'local_sigaaintegration'),
+                new lang_string('preserveinstitutionalemail_desc', 'local_sigaaintegration'),
+                1 // Valor padrão: marcado (1 = preservar por padrão)
+            ));
+
         }
     }
 

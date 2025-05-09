@@ -38,9 +38,9 @@ class sigaa_students_sync extends sigaa_base_sync
     protected function process_records(campus $campus, array $records): void
     {
         mtrace("Processando dados: ". $campus->description);
-        foreach ($records as $key => $record) {
+        foreach ($records as $key => $enrollment) {
             try {
-                $this->insert_student_if_course_exists($campus, $records);
+                $this->sync_user($campus, $enrollment);
             } catch (Exception $e) {
                 mtrace(sprintf(
                     'ERRO: Falha ao processar o estudante. Matrícula: %s, erro: %s',
@@ -51,28 +51,77 @@ class sigaa_students_sync extends sigaa_base_sync
         }
     }
 
-    private function insert_student_if_course_exists($campus, array $enrollments): void
+    private function sync_user(campus $campus, array $enrollment)
     {
-        foreach ($enrollments as $record) {
-            try {
-                // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
-                $courseidnumber = $campus->id_campus.'.'.$record['id_curso'];//ex: 53.44973, procura pela existência do curso.
-                if($this->search_course_by_id($courseidnumber)) {
-                    //inserir usuario no moodle
-                    $this->user_moodle->insert($record);
-                    //continue;//inserindo a primeira vez, não preciso olhar o restante das disciplinas para esse usuario.
-                }
-            } catch (Exception $e) {
-                mtrace(sprintf(
-                    'ERRO: Falha ao processar criação de estudante no moodle. ' .
-                    'Usuário: %s, usuário: %s, disciplina: %s, erro: %s',
-                    $record['matricula'],
-                    $record['nome_completo'],
-                    $courseidnumber,
-                    $e->getMessage()
-                ));
+        // Processa o usuário somente se o curso existir no banco de dados do Moodle.
+        if($this->course_exists_in_moodle($campus, $enrollment)){
+            $current_user = $this->user_moodle->get_user_by_login($enrollment['login']);
+            if($current_user){
+                // Etapa de Sincronização de E-mail entre o SIGAA e Moodle
+                $this->maybe_sync_email($campus, $current_user, $enrollment);
+            } else {
+                // Cadastra o novo usuário no Moodle
+                $this->user_moodle->insert($enrollment);
             }
         }
+
+    }
+
+    private function maybe_sync_email(campus $campus, $current_user, array $enrollment): void {
+        if (!$campus->syncemailwithsigaa) {
+            return;
+        }
+
+        mtrace("{$enrollment['login']}: Email atual: {$current_user->email}");
+
+        if (strtolower($current_user->email) === strtolower($enrollment['email'])) {
+            return; // Os e-mails são iguais, nada a fazer
+        }
+
+        $domain = strtolower($campus->description) . '.ifrs.edu.br';
+
+        if ($campus->preserveinstitutionalemail) {
+            if ($this->user_moodle->is_institutional_email($current_user->email, $domain)) {
+                mtrace("INFO: E-mail do usuário {$current_user->username} pertence ao domínio '{$domain}'. Não será atualizado.");
+                return;
+            }
+        }
+
+        $this->user_moodle->update_email($current_user, $enrollment['email']);
+    }
+
+
+    private function course_exists_in_moodle($campus, array $enrollment): bool
+    {
+        //ex: 53.44973, procura pela existência do curso.
+        $courseidnumber = $campus->id_campus.'.'.$enrollment['id_curso'];
+        if($this->search_course_by_id($courseidnumber)) {
+            return true;
+        }
+        return false;
+    }
+
+    private function insert_student_if_course_exists($campus, array $enrollment): void
+    {
+        try {
+            // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
+            $courseidnumber = $campus->id_campus.'.'.$enrollment['id_curso'];//ex: 53.44973, procura pela existência do curso.
+            if($this->search_course_by_id($courseidnumber)) {
+                //inserir usuario no moodle
+                $this->user_moodle->insert($enrollment);
+                //continue;//inserindo a primeira vez, não preciso olhar o restante das disciplinas para esse usuario.
+            }
+        } catch (Exception $e) {
+            mtrace(sprintf(
+                'ERRO: Falha ao processar criação de estudante no moodle. ' .
+                'Usuário: %s, usuário: %s, disciplina: %s, erro: %s',
+                $enrollment['matricula'],
+                $enrollment['nome_completo'],
+                $courseidnumber,
+                $e->getMessage()
+            ));
+        }
+
     }
 
     //procura pela existencia do curso no moodle

@@ -71,8 +71,9 @@ $string['error:no_enrol_instance'] = 'Manual enrol plugin is disabled.';
 $string['error:user_already_enrolled'] = 'User "{$a->userid}" is already enrolled into course "{$a->courseid}"';
 $string['error:course_already_exists'] = 'Course already exists.';
 
-$string['clientlist'] = 'Client list';
-$string['clientlist_desc'] = 'List of campus to configure, separated by comma. Ex: alvorada, osorio, porto alegre';
+$string['clientlist'] = 'Campus list';
+$string['clientlist_desc'] = 'List of campuses to configure, separated by commas. Example: alvorada, osorio, poa. The list should only contain the first part of the domain, such as "alvorada.ifrs.edu.br", where the correct value is "alvorada".';
+
 $string['client_config'] = 'IFRS';
 
 $string['id_campus'] = 'id_campus';
@@ -107,3 +108,9 @@ $string['invalidcpf'] = 'Invalid cpf';
 
 $string['createcourseifturmanull'] = 'Create course if turma is null';
 $string['createcourseifturmanull_desc'] = 'Create a new course when turma value is null.';
+
+$string['syncemailwithsigaa'] = 'Sync email with SIGAA';
+$string['syncemailwithsigaa_desc'] = 'If enabled, users\' email addresses will be synchronized with the value provided by SIGAA during the integration process.';
+
+$string['preserveinstitutionalemail'] = 'Preserve institutional email in Moodle during synchronization';
+$string['preserveinstitutionalemail_desc'] = 'If enabled, the user\'s institutional email will not be overwritten by the email coming from SIGAA during synchronization.';

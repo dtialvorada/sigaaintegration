@@ -38,6 +38,40 @@ class user_moodle
         return '';
     }
 
+    public function update_email($user, string $newemail): bool {
+        global $DB;
+
+        if (!filter_var($newemail, FILTER_VALIDATE_EMAIL)) {
+            mtrace("ERROR: E-mail fornecido não é válido: {$newemail}");
+            return false;
+        }
+        try {
+            // Atualiza o e-mail
+            $user->email = $newemail;
+            $DB->update_record('user', $user);
+            mtrace("INFO: E-mail do usuário {$user->username} foi atualizado para {$newemail}.");
+            return true;
+        } catch (Exception $e) {
+            mtrace("ERROR: Falha ao atualizar o e-mail do usuário {$user->username}: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function is_institutional_email(string $email, string $institutional_domain): bool {
+        // Verifica se o e-mail é válido antes de continuar
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
+
+        // Extrai o domínio do e-mail
+        $email_domain = strtolower(substr(strrchr($email, "@"), 1));
+        $institutional_domain = strtolower($institutional_domain);
+
+        // Compara os domínios
+        return $email_domain === $institutional_domain;
+    }
+
+
     /**
      * Verifica se um usuário está cadastrado pelo login.
      *
@@ -46,10 +80,14 @@ class user_moodle
      */
     public function is_user_registered_by_login($login): bool {
         global $DB;
-        //mtrace("aqui");
-        //var_dump($login);
-        // Verifica se o login existe no banco de dados
+        // Verifica se o login existe no banco de dados e  retorna ele
         return $DB->record_exists('user', ['username' => $login]);
+    }
+
+    public function get_user_by_login(string $login): stdClass|false  {
+        global $DB;
+        // Verifica se o login existe no banco de dados e  retorna ele
+        return $DB->get_record('user', ['username' => $login]);
     }
 
     protected function validate_user_data(array $record): void {
