@@ -24,7 +24,10 @@ class sigaa_courses_sync extends sigaa_base_sync{
 
     protected function get_records(campus $campus): array
     {
+        mtrace("CONFIG: Criar turmas com valor null: " . ($campus->createcourseifturmanull ? "Ativada" : "DESATIVADA"));
+        mtrace("CONFIG: Criar turmas individualizadas: " . ($campus->create_turmaindividualizada ? "Ativada" : "DESATIVADA"));
         mtrace('INFO: Importando disciplinas...');
+
         $academic_period = sigaa_academic_period::buildFromParameters($this->year, $this->period);
         $enrollments = $this->api_client->get_enrollments($campus, $academic_period);
         return $this->get_all_course_discipline($campus, $enrollments);
@@ -106,7 +109,7 @@ class sigaa_courses_sync extends sigaa_base_sync{
             // Percorrendo as disciplinas do aluno
             foreach ($student["disciplinas"] as $discipline) {
                 // Valida a disciplina
-                if (sigaa_utils::validate_discipline($discipline, $campus->createcourseifturmanull)) {
+                if (sigaa_utils::validate_discipline($campus, $discipline)) {
                     // Mapeia os dados da disciplina para o objeto course_discipline
                     $discipline_obj = $this->course_discipline_mapper->map_to_course_discipline($student, $discipline);
 

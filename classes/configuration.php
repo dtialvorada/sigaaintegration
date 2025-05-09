@@ -50,18 +50,21 @@ class configuration {
                 $createcourseifturmanull = get_config('local_sigaaintegration', "createcourseifturmanull_{$client}");
                 $syncemailwithsigaa = get_config('local_sigaaintegration', "syncemailwithsigaa_{$client}");
                 $preserveinstitutionalemail = get_config('local_sigaaintegration', "preserveinstitutionalemail_{$client}");
+                $create_turmaindividualizada = get_config('local_sigaaintegration', "create_turmaindividualizada_{$client}");
+
 
 
                 if ($id_campus !== null && $scheduled_sync !== null && $modalidade_educacao !== null) {
                     $new_client = new campus($id_campus,
-                        $client,
-                        $scheduled_sync,
-                        $modalidade_educacao,
-                        $coursevisibility,
-                        $createcourseifturmanull,
-                        $syncemailwithsigaa,
-                        $preserveinstitutionalemail
-                    );
+                                                $client,
+                                                $scheduled_sync,
+                                                $modalidade_educacao,
+                                                $coursevisibility,
+                                                $createcourseifturmanull,
+                                                $create_turmaindividualizada,
+                                                $syncemailwithsigaa,
+                                                $preserveinstitutionalemail,
+                                            );
                     $client_configs[] = $new_client;
                 }
             }

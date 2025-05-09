@@ -139,3 +139,7 @@ $string['syncemailwithsigaa_desc'] = 'Se habilitado, o endereço de e-mail dos u
 
 $string['preserveinstitutionalemail'] = 'Preservar e-mail institucional no Moodle durante a Sincronização.';
 $string['preserveinstitutionalemail_desc'] = 'Se habilitado, o e-mail institucional do usuário não será sobrescrito pelo e-mail vindo do SIGAA durante a sincronização.';
+
+
+$string['create_turmaindividualizada'] = 'Criar turmas individualizadas';
+$string['create_turmaindividualizada_desc'] = 'Habilita a criação automática de disciplinas no Moodle para turmas individualizadas identificadas com o sufixo "IND".';

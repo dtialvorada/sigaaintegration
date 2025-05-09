@@ -10,6 +10,8 @@
 
 namespace local_sigaaintegration\utils;
 
+use local_sigaaintegration\campus;
+
 /**
  * Classe utilitária para integração com o SIGAA.
  */
@@ -41,7 +43,11 @@ class sigaa_utils {
      * @param array $disciplina Os dados da disciplina.
      * @return bool True se for válida, False caso contrário.
      */
-    public static function validate_discipline(array $discipline, bool $sem_turma): bool {
+    public static function validate_discipline(campus $campus, array $discipline): bool {
+
+        $sem_turma = $campus->createcourseifturmanull;
+        $turma_individualizada = $campus->create_turmaindividualizada;
+
         // Verifica os campos básicos da disciplina
         $discipline_valid = isset($discipline['periodo']) && isset($discipline['semestres_oferta']) &&
             ($discipline['semestres_oferta'] !== null && !empty($discipline['semestres_oferta']));
@@ -49,6 +55,14 @@ class sigaa_utils {
         // Se não permitir disciplina sem turma, então a turma deve estar definida e não ser nula
         if (!$sem_turma) {
             return $discipline_valid && isset($discipline['turma']) && $discipline['turma'] !== null;
+        }
+
+        // Verificar se permite a criação de disciplina para turmas individualizadas
+        if(!$turma_individualizada && $discipline['turma'] !== null){
+            if (substr($discipline['turma'], -3) === 'IND') {
+                mtrace("Turma individualizada {$discipline['turma']}");
+                return false;
+            }
         }
 
         return $discipline_valid;

@@ -12,6 +12,8 @@ class campus
 
     public  bool $createcourseifturmanull;
 
+    public bool $create_turmaindividualizada;
+
     public bool $syncemailwithsigaa;
 
     public bool $preserveinstitutionalemail;
@@ -30,8 +32,10 @@ class campus
                                 int $modalidade_educacao,
                                 bool $coursevisibility,
                                 bool $createcourseifturmanull,
+                                bool $create_turmaindividualizada,
                                 bool $syncemailwithsigaa,
-                                bool $preserveinstitutionalemail)
+                                bool $preserveinstitutionalemail
+    )
     {
         $this->id_campus = $id_campus;
         $this->description = $description;
@@ -39,8 +43,10 @@ class campus
         $this->modalidade_educacao = $modalidade_educacao;
         $this->coursevisibility = $coursevisibility;
         $this->createcourseifturmanull = $createcourseifturmanull;
+        $this->create_turmaindividualizada = $create_turmaindividualizada;
         $this->syncemailwithsigaa = $syncemailwithsigaa;
         $this->preserveinstitutionalemail = $preserveinstitutionalemail;
+
 
     }
 

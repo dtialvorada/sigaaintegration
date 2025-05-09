@@ -26,10 +26,7 @@ abstract class sigaa_base_sync
             foreach ($this->clientlist as $campus) {
                 if ($campus->scheduled_sync) {
                     mtrace("Campus " . $campus->description . ": Início da Sincronização...");
-                    mtrace("Sincronização de e-mail está: " . ($campus->syncemailwithsigaa ? "Ativada" : "DESATIVADA"));
-                    if($campus->syncemailwithsigaa) {
-                        mtrace("Preservação do e-mail institucional: " . ($campus->preserveinstitutionalemail ? "Ativada" : "DESATIVADA"));
-                    }
+
                     $records = $this->get_records($campus);
 
                     mtrace('INFO: Início da sincronização. Total de registros: ' . count($records));

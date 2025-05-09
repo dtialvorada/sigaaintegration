@@ -83,7 +83,7 @@ class sigaa_enrollments_students_sync extends sigaa_base_sync
                 mtrace(sprintf('Processando o usuário: %s', $enrollment['login']));
                 foreach ($enrollment['disciplinas'] as $course_enrollment) {
                     try {
-                        if (sigaa_utils::validate_discipline($course_enrollment, $campus->createcourseifturmanull)) {
+                        if (sigaa_utils::validate_discipline($campus, $course_enrollment)) {
                             // generate_course_idnumber(campus $campus, $enrollment, $disciplina);
                             $course_discipline = $this->course_discipline_mapper->map_to_course_discipline($enrollment, $course_enrollment);
 

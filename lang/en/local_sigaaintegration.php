@@ -114,3 +114,6 @@ $string['syncemailwithsigaa_desc'] = 'If enabled, users\' email addresses will b
 
 $string['preserveinstitutionalemail'] = 'Preserve institutional email in Moodle during synchronization';
 $string['preserveinstitutionalemail_desc'] = 'If enabled, the user\'s institutional email will not be overwritten by the email coming from SIGAA during synchronization.';
+
+$string['create_turmaindividualizada'] = 'Create individualized classes';
+$string['create_turmaindividualizada_desc'] = 'Enables the automatic creation of Moodle courses for individualized classes identified by the "IND" suffix.';

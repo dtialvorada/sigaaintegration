@@ -150,6 +150,14 @@ if ($ADMIN->fulltree) {
                 0 // Valor padrão: desmarcado (0)
             ));
 
+            // Habilita a criação de Disciplinas que são Turmas Individualizas
+            $settings->add(new admin_setting_configcheckbox(
+                "local_sigaaintegration/create_turmaindividualizada_{$client}",
+                new lang_string('create_turmaindividualizada', 'local_sigaaintegration'),
+                new lang_string('create_turmaindividualizada_desc', 'local_sigaaintegration'),
+                0 // Valor padrão: desmarcado (0)
+            ));
+
             $settings->add(new admin_setting_configcheckbox(
                 "local_sigaaintegration/syncemailwithsigaa_{$client}",
                 new lang_string('syncemailwithsigaa', 'local_sigaaintegration'),

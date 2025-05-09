@@ -31,12 +31,17 @@ class sigaa_students_sync extends sigaa_base_sync
 
     protected function get_records($campus): array
     {
+        mtrace("Sincronização de e-mail está: " . ($campus->syncemailwithsigaa ? "Ativada" : "DESATIVADA"));
+        if($campus->syncemailwithsigaa) {
+            mtrace("Preservação do e-mail institucional: " . ($campus->preserveinstitutionalemail ? "Ativada" : "DESATIVADA"));
+        }
         $periodoletivo = sigaa_academic_period::buildFromParameters($this->ano, $this->periodo);
         return $this->api_client->get_enrollments($campus, $periodoletivo);
     }
 
     protected function process_records(campus $campus, array $records): void
     {
+
         mtrace("Processando dados: ". $campus->description);
         foreach ($records as $key => $enrollment) {
             try {
