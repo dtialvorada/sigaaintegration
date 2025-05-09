@@ -29,7 +29,7 @@ class course_discipline_mapper
             $discipline["disciplina"],
             $discipline["cod_disciplina"],
             $discipline["id_disciplina"],
-            $discipline["semestres_oferta"],
+            $discipline["semestre_oferta_cursando"],
             $discipline["periodo"],
             $discipline["situacao_matricula"],
             $discipline["turma"],

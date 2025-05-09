@@ -58,10 +58,10 @@ class sigaa_courses_sync extends sigaa_base_sync{
                 mtrace("idnumber: " . $course_idnumber);
                 $class_group = $course_discipline->generate_class_group($campus);
                 $period = sigaa_utils::remove_zero_in_the_period($course_discipline->period);
-                $fullname = "{$course_discipline->discipline_name} / {$course_discipline->course_name} / {$course_discipline->semester_offered}" . sigaa_utils::get_year_or_semester_suffix($course_discipline->period) . " / {$period}";
+                $fullname = "{$course_discipline->discipline_name} / {$course_discipline->course_name} / {$course_discipline->current_enrollment_semester}" . sigaa_utils::get_year_or_semester_suffix($course_discipline->period) . " / {$period}";
                 $shortname = "{$course_discipline->discipline_code} / 
                             {$course_discipline->course_id} / {$class_group} / 
-                            {$course_discipline->semester_offered}" . sigaa_utils::get_year_or_semester_suffix($course_discipline->period) .
+                            {$course_discipline->current_enrollment_semester}" . sigaa_utils::get_year_or_semester_suffix($course_discipline->period) .
                     " / {$course_discipline->period}";
 
                 if (!$this->course_exists($course_idnumber)) {
@@ -138,6 +138,6 @@ class sigaa_courses_sync extends sigaa_base_sync{
     }
 
     private function generate_category_level_three_id(campus $campus, course_discipline $course_discipline) {
-        return "{$campus->id_campus}.{$course_discipline->course_id}.{$course_discipline->period}.{$course_discipline->semester_offered}";
+        return "{$campus->id_campus}.{$course_discipline->course_id}.{$course_discipline->period}.{$course_discipline->current_enrollment_semester}";
     }
 }

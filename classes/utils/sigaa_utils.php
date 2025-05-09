@@ -49,8 +49,8 @@ class sigaa_utils {
         $turma_individualizada = $campus->create_turmaindividualizada;
 
         // Verifica os campos básicos da disciplina
-        $discipline_valid = isset($discipline['periodo']) && isset($discipline['semestres_oferta']) &&
-            ($discipline['semestres_oferta'] !== null && !empty($discipline['semestres_oferta']));
+        $discipline_valid = isset($discipline['periodo']) && isset($discipline['semestre_oferta_cursando']) &&
+            ($discipline['semestre_oferta_cursando'] !== null && !empty($discipline['semestre_oferta_cursando']));
 
         // Se não permitir disciplina sem turma, então a turma deve estar definida e não ser nula
         if (!$sem_turma) {

@@ -143,14 +143,14 @@ class sigaa_categories_sync extends sigaa_base_sync{
     }
 
     private function generate_category_level_three_id(campus $campus, course_discipline $course_discipline ) {
-        return "{$campus->id_campus}.{$course_discipline->course_id}.{$course_discipline->period}.{$course_discipline->semester_offered}";
+        return "{$campus->id_campus}.{$course_discipline->course_id}.{$course_discipline->period}.{$course_discipline->current_enrollment_semester}";
     }
 
     private function create_category_level_three(campus $campus, course_discipline $course_discipline) {
         global $DB;
 
         // algumas vezes o semestre oferta disciplina está vazio
-        if (isset($course_discipline->period) && isset($course_discipline->semester_offered)) {
+        if (isset($course_discipline->period) && isset($course_discipline->current_enrollment_semester)) {
 
             $parent_idnumber = $this->generate_category_level_two_id($campus, $course_discipline);
             $parent_category = $DB->get_record('course_categories', ['idnumber' => $parent_idnumber]);
@@ -159,10 +159,10 @@ class sigaa_categories_sync extends sigaa_base_sync{
                 // Gera o identificador do nível 3
                 $idnumber = $this->generate_category_level_three_id($campus, $course_discipline);
 
-                if (substr($course_discipline->period, -2) !== '/0' && $course_discipline->semester_offered === '0') {
+                if (substr($course_discipline->period, -2) !== '/0' && $course_discipline->current_enrollment_semester === '0') {
                     $name = "Optativas";
                 } else {
-                    $name = "{$course_discipline->semester_offered}" . $this->get_year_or_semester_suffix($course_discipline->period);
+                    $name = "{$course_discipline->current_enrollment_semester}" . $this->get_year_or_semester_suffix($course_discipline->period);
                 }
                 if (!$this->category_exists($idnumber)) {
                     $this->create_category($name, $idnumber, $parent_category->id);
@@ -230,7 +230,7 @@ class sigaa_categories_sync extends sigaa_base_sync{
             $discipline["disciplina"],
             $discipline["cod_disciplina"],
             $discipline["id_disciplina"],
-            $discipline["semestres_oferta"],
+            $discipline["semestre_oferta_cursando"],
             $discipline["periodo"],
             $discipline["situacao_matricula"],
             $discipline["turma"],

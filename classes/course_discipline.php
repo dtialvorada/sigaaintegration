@@ -11,6 +11,9 @@ class course_discipline
     public $discipline_code;
     public $discipline_id;
     public $semester_offered;
+
+    public $current_enrollment_semester;
+
     public $period;
     public $enrollment_status;
     public $class_group;
@@ -20,7 +23,7 @@ class course_discipline
     // Construtor da classe
     public function __construct($course_id, $course_code, $course_name, $course_level, $status,
                                 $discipline_name, $discipline_code, $discipline_id,
-                                $semester_offered, $period,
+                                $current_enrollment_semester, $period,
                                 $enrollment_status, $class_group, $education_mode, $shift)
     {
         $this->course_id = $course_id;
@@ -32,12 +35,7 @@ class course_discipline
         $this->discipline_code = $discipline_code;
         $this->discipline_id = $discipline_id;
 
-        // Filtra apenas os valores inteiros
-        $valid_semesters = preg_grep('/^\d+$/', $semester_offered);
-
-        // Se houver pelo menos um semestre válido, pega o último
-        $this->semester_offered = !empty($valid_semesters) ? end($valid_semesters) : null;
-
+        $this->current_enrollment_semester = $current_enrollment_semester;
 
         $this->period = $period;
         $this->enrollment_status = $enrollment_status;
@@ -55,7 +53,7 @@ class course_discipline
             $this->discipline_name === $other->discipline_name &&
             $this->discipline_code === $other->discipline_code &&
             $this->discipline_id === $other->discipline_id &&
-            $this->semester_offered === $other->semester_offered &&
+            $this->current_enrollment_semester === $other->current_enrollment_semester &&
             $this->period === $other->period &&
             $this->enrollment_status === $other->enrollment_status &&
             $this->class_group === $other->class_group &&
@@ -86,6 +84,6 @@ class course_discipline
             return false;
         }
 
-        return "{$campus->id_campus}.{$this->course_id}.{$this->discipline_id}.{$class_group}.{$this->period}.{$this->semester_offered}";
+        return "{$campus->id_campus}.{$this->course_id}.{$this->discipline_id}.{$class_group}.{$this->period}.{$this->current_enrollment_semester}";
     }
 }
