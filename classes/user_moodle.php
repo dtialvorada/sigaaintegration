@@ -58,17 +58,14 @@ class user_moodle
     }
 
     public function is_institutional_email(string $email, string $institutional_domain): bool {
-        // Verifica se o e-mail é válido antes de continuar
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             return false;
         }
 
-        // Extrai o domínio do e-mail
         $email_domain = strtolower(substr(strrchr($email, "@"), 1));
         $institutional_domain = strtolower($institutional_domain);
 
-        // Compara os domínios
-        return $email_domain === $institutional_domain;
+        return substr_compare($email_domain, $institutional_domain, -strlen($institutional_domain)) === 0;
     }
 
 

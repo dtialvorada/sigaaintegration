@@ -77,13 +77,13 @@ class sigaa_students_sync extends sigaa_base_sync
             return;
         }
 
-        mtrace("{$enrollment['login']}: Email atual: {$current_user->email}");
+        mtrace("{$enrollment['login']}: Email moodle: {$current_user->email}");
 
         if (strtolower($current_user->email) === strtolower($enrollment['email'])) {
             return; // Os e-mails são iguais, nada a fazer
         }
 
-        $domain = strtolower($campus->description) . '.ifrs.edu.br';
+        $domain = 'ifrs.edu.br';
 
         if ($campus->preserveinstitutionalemail) {
             if ($this->user_moodle->is_institutional_email($current_user->email, $domain)) {
