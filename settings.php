@@ -83,6 +83,9 @@ if ($ADMIN->fulltree) {
         null, // Não especifica largura (número de colunas).
         '3'  // Define o número de linhas.
     );
+    // Adiciona o ícone de ajuda (tooltip)
+    //$clientlist->set_help('clientlist', 'clientlist_help', 'local_sigaaintegration');
+
     $settings->add($clientlist);
 
     // Recupera a lista de clientes cadastrados
@@ -224,4 +227,12 @@ if ($ADMIN->fulltree) {
         $settings->add($studentroleid);
         $settings->add($teacherroleid);
     }
+
+    $settings->add(new admin_setting_heading(
+        'local_sigaaintegration/clientlist_info',
+        new lang_string('campi_codes_title', 'local_sigaaintegration'), // Deixe o título em branco se quiser só o texto
+        new lang_string('clientlist_info_desc', 'local_sigaaintegration') // Texto de ajuda/instrução
+    ));
+
+
 }

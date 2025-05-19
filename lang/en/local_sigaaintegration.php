@@ -117,3 +117,9 @@ $string['preserveinstitutionalemail_desc'] = 'If enabled, the user\'s institutio
 
 $string['create_turmaindividualizada'] = 'Create individualized classes';
 $string['create_turmaindividualizada_desc'] = 'Enables the automatic creation of Moodle courses for individualized classes identified by the "IND" suffix.';
+
+$string['campi_codes_title'] = 'Codes';
+
+$string['clientlist_info_desc'] = '11: Bento Gonçalves; 20: Canoas; 25: Erechim; 29: Osório; 31: Porto Alegre; 
+35: Rio Grande; 40: Sertão; 46: Restinga; 47: Feliz; 48: Ibirubá; 49: Caxias do Sul; 50: Farroupilha; 52: Rolante; 
+53: Alvorada; 54: Viamão; 55: Vacaria; 56: Veranópolis';
