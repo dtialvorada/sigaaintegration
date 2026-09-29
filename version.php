@@ -28,6 +28,6 @@ $plugin->version = 2026092901; //YYYYMMDDXX
 $plugin->requires = 2023100400;
 $plugin->component = 'local_sigaaintegration';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v1.0.10';
+$plugin->release = 'v1.1.1';
 
 $plugin->dependencies = [];
