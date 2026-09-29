@@ -85,10 +85,13 @@ class sigaa_categories_sync extends sigaa_base_sync{
                         }
 
                         // Criação do nível 3 (semestre ou ano)
-                        $idnumber_level_three = $this->generate_category_level_three_id($campus, $course_discipline);
-                        if (!isset($this->category_level_three_created[$idnumber_level_three])) {
-                            $this->create_category_level_three($campus, $course_discipline);
-                            $this->category_level_three_created[$idnumber_level_three] = true;
+                        if ($course_discipline->course_level !== 'E') {
+
+                            $idnumber_level_three = $this->generate_category_level_three_id($campus, $course_discipline);
+                            if (!isset($this->category_level_three_created[$idnumber_level_three])) {
+                                $this->create_category_level_three($campus, $course_discipline);
+                                $this->category_level_three_created[$idnumber_level_three] = true;
+                            }
                         }
 
                     }
@@ -195,7 +198,14 @@ class sigaa_categories_sync extends sigaa_base_sync{
                     mtrace("========================================");
                 }
 
-                if ($semester !== null) {
+                if ($discipline_obj->course_level === 'E') {
+
+                    // Cursos de nível E não possuem semestre curricular.
+                    // A disciplina será processada diretamente na categoria de nível 2.
+                    $id = "{$campus->id_campus}.{$discipline_obj->course_id}.{$discipline_obj->period}.E";
+                    $disciplines[$id] = $discipline_obj;
+
+                } elseif ($semester !== null) {
                     $id = "{$campus->id_campus}.{$discipline_obj->course_id}.{$discipline_obj->period}.{$semester}";
                     $disciplines[$id] = $discipline_obj;
                 }
