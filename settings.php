@@ -228,11 +228,31 @@ if ($ADMIN->fulltree) {
         $settings->add($teacherroleid);
     }
 
+    $authplugins = \core_component::get_plugin_list('auth');
+    $authoptions = [];
+    foreach (array_keys($authplugins) as $auth) {
+        $authoptions[$auth] = get_string('pluginname', 'auth_' . $auth);
+    }
+
+    // Cria o campo de seleção de método de autenticação (padrão: ldap)
+    $authmethod = new admin_setting_configselect(
+        'local_sigaaintegration/authmethod',
+        'Método de Autenticação para Novos Usuários',
+        'Selecione o método de autenticação que será atribuído às contas criadas pela integração.',
+        'manual', // Valor padrão predefinido como 'manual'
+        $authoptions
+    );
+
+    $settings->add($authmethod);
+
     $settings->add(new admin_setting_heading(
         'local_sigaaintegration/clientlist_info',
         new lang_string('campi_codes_title', 'local_sigaaintegration'), // Deixe o título em branco se quiser só o texto
         new lang_string('clientlist_info_desc', 'local_sigaaintegration') // Texto de ajuda/instrução
     ));
+
+
+
 
 
 }
